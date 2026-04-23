@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serbian Learning App</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #1a5276;
+  --primary-light: #2980b9;
+  --accent: #e74c3c;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --border: #dcdde1;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  background: var(--primary);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.nav-title {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 12px 20px 4px;
+  letter-spacing: 0.5px;
+}
+
+.nav-tabs {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.65);
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.nav-tab:hover { color: rgba(255,255,255,0.9); }
+.nav-tab.active {
+  color: white;
+  border-bottom-color: var(--warning);
+}
+
+/* MAIN */
+main {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.section { display: none; }
+.section.active { display: block; }
+
+h2 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+/* CATEGORY SELECTOR */
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cat-btn {
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.cat-btn:hover { border-color: var(--primary-light); }
+.cat-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* FLASHCARD */
+.flashcard-container {
+  perspective: 1000px;
+  margin-bottom: 20px;
+}
+
+.flashcard {
+  width: 100%;
+  min-height: 220px;
+  cursor: pointer;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  min-height: 220px;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.flashcard-front {
+  background: var(--card);
+  border: 2px solid var(--border);
+}
+
+.flashcard-back {
+  background: var(--primary);
+  color: white;
+  transform: rotateY(180deg);
+}
+
+.flashcard-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.flashcard-word {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.flashcard-extra {
+  font-size: 0.9rem;
+  margin-top: 10px;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.flashcard-hint {
+  font-size: 0.75rem;
+  margin-top: 16px;
+  opacity: 0.4;
+}
+
+.flashcard-nav {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.fc-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fc-btn-prev, .fc-btn-next {
+  background: var(--primary);
+  color: white;
+}
+.fc-btn-prev:hover, .fc-btn-next:hover {
+  background: var(--primary-light);
+}
+.fc-btn-shuffle {
+  background: var(--warning);
+  color: white;
+}
+
+.fc-counter {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+.fc-direction {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.dir-btn {
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+.dir-btn.active {
+  background: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
+/* QUIZ */
+.quiz-question {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.quiz-prompt-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.quiz-prompt {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.quiz-context {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.quiz-options {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.quiz-option {
+  padding: 14px 20px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-weight: 500;
+}
+.quiz-option:hover { border-color: var(--primary-light); background: #f0f7ff; }
+.quiz-option.correct {
+  border-color: var(--success);
+  background: #d5f5e3;
+  color: var(--success);
+}
+.quiz-option.wrong {
+  border-color: var(--accent);
+  background: #fadbd8;
+  color: var(--accent);
+}
+.quiz-option.disabled { pointer-events: none; }
+
+.quiz-score {
+  text-align: center;
+  padding: 12px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+
+.quiz-score-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.quiz-next-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quiz-next-btn:hover { background: var(--primary-light); }
+
+/* CONJUGATION TRAINER */
+.conj-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.conj-verb {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.conj-english {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 16px;
+}
+
+.conj-pronoun {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.conj-input-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.conj-input {
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1.1rem;
+  text-align: center;
+  width: 240px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.conj-input:focus { border-color: var(--primary-light); }
+.conj-input.correct { border-color: var(--success); background: #d5f5e3; }
+.conj-input.wrong { border-color: var(--accent); background: #fadbd8; }
+
+.conj-check-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.conj-feedback {
+  margin-top: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  min-height: 24px;
+}
+
+.conj-streak {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.conj-streak span {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* CASE TRAINER */
+.case-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.case-name {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary-light);
+  margin-bottom: 4px;
+}
+
+.case-prompt {
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.case-prompt strong {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+.case-hint {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+/* SENTENCE BUILDER */
+.sb-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+.sb-english {
+  font-size: 1rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.sb-sentence {
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.8;
+}
+
+.sb-blank {
+  display: inline-block;
+  border-bottom: 3px solid var(--primary-light);
+  min-width: 100px;
+  padding: 2px 4px;
+  margin: 0 4px;
+}
+
+.sb-input {
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1.1rem;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin: 0 auto 12px;
+  outline: none;
+}
+.sb-input:focus { border-color: var(--primary-light); }
+.sb-input.correct { border-color: var(--success); background: #d5f5e3; }
+.sb-input.wrong { border-color: var(--accent); background: #fadbd8; }
+
+/* SHARED UTILITY */
+.text-success { color: var(--success); }
+.text-error { color: var(--accent); }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .flashcard-word { font-size: 1.5rem; }
+  .quiz-prompt { font-size: 1.4rem; }
+  .nav-tab { padding: 10px 12px; font-size: 0.8rem; }
+  main { padding: 16px 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-title">Serbian Learning</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-section="flashcards">Flashcards</button>
+    <button class="nav-tab" data-section="quiz">Quiz</button>
+    <button class="nav-tab" data-section="conjugation">Conjugation</button>
+    <button class="nav-tab" data-section="cases">Cases</button>
+    <button class="nav-tab" data-section="sentences">Sentences</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- FLASHCARDS -->
+  <div id="flashcards" class="section active">
+    <h2>Flashcards</h2>
+    <div class="category-bar" id="fc-categories"></div>
+    <div class="fc-direction">
+      <button class="dir-btn active" data-dir="en-sr">English &rarr; Serbian</button>
+      <button class="dir-btn" data-dir="sr-en">Serbian &rarr; English</button>
+    </div>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-face flashcard-front">
+          <div class="flashcard-label" id="fc-front-label">English</div>
+          <div class="flashcard-word" id="fc-front-word"></div>
+          <div class="flashcard-extra" id="fc-front-extra"></div>
+          <div class="flashcard-hint">Tap to flip</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="flashcard-label" id="fc-back-label">Serbian</div>
+          <div class="flashcard-word" id="fc-back-word"></div>
+          <div class="flashcard-extra" id="fc-back-extra"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flashcard-nav">
+      <button class="fc-btn fc-btn-prev" onclick="fcPrev()">&larr; Prev</button>
+      <span class="fc-counter" id="fc-counter">1 / 10</span>
+      <button class="fc-btn fc-btn-next" onclick="fcNext()">Next &rarr;</button>
+      <button class="fc-btn fc-btn-shuffle" onclick="fcShuffle()">Shuffle</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" class="section">
+    <h2>Quiz</h2>
+    <div class="category-bar" id="quiz-categories"></div>
+    <div class="quiz-score">
+      Score: <span class="quiz-score-num" id="quiz-score">0 / 0</span>
+    </div>
+    <div class="quiz-question">
+      <div class="quiz-prompt-label" id="quiz-label">Translate to Serbian</div>
+      <div class="quiz-prompt" id="quiz-prompt"></div>
+      <div class="quiz-context" id="quiz-context"></div>
+    </div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <button class="quiz-next-btn" id="quiz-next" onclick="quizNext()" style="display:none">Next Question &rarr;</button>
+  </div>
+
+  <!-- CONJUGATION -->
+  <div id="conjugation" class="section">
+    <h2>Conjugation Trainer</h2>
+    <div class="conj-streak">
+      Streak: <span id="conj-streak">0</span> | Best: <span id="conj-best">0</span>
+    </div>
+    <div class="conj-card">
+      <div class="conj-verb" id="conj-verb"></div>
+      <div class="conj-english" id="conj-english"></div>
+      <div class="conj-pronoun" id="conj-pronoun"></div>
+      <div class="conj-input-row">
+        <input type="text" class="conj-input" id="conj-input" placeholder="Type conjugation..." autocomplete="off" autocapitalize="off">
+        <button class="conj-check-btn" onclick="conjCheck()">Check</button>
+      </div>
+      <div class="conj-feedback" id="conj-feedback"></div>
+    </div>
+    <div class="btn-row">
+      <button class="fc-btn fc-btn-next" onclick="conjNext()">Skip &rarr;</button>
+    </div>
+  </div>
+
+  <!-- CASES -->
+  <div id="cases" class="section">
+    <h2>Case Trainer</h2>
+    <div class="category-bar" id="case-categories"></div>
+    <div class="conj-streak">
+      Score: <span id="case-score">0</span> / <span id="case-total">0</span>
+    </div>
+    <div class="case-card">
+      <div class="case-name" id="case-name"></div>
+      <div class="case-prompt" id="case-prompt"></div>
+      <div class="case-hint" id="case-hint"></div>
+      <div class="conj-input-row">
+        <input type="text" class="conj-input" id="case-input" placeholder="Type answer..." autocomplete="off" autocapitalize="off">
+        <button class="conj-check-btn" onclick="caseCheck()">Check</button>
+      </div>
+      <div class="conj-feedback" id="case-feedback"></div>
+    </div>
+    <div class="btn-row">
+      <button class="fc-btn fc-btn-next" onclick="caseNext()">Skip &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SENTENCES -->
+  <div id="sentences" class="section">
+    <h2>Sentence Builder</h2>
+    <div class="conj-streak">
+      Score: <span id="sb-score">0</span> / <span id="sb-total">0</span>
+    </div>
+    <div class="sb-card">
+      <div class="sb-english" id="sb-english"></div>
+      <div class="sb-sentence" id="sb-sentence"></div>
+      <input type="text" class="sb-input" id="sb-input" placeholder="Fill in the blank..." autocomplete="off" autocapitalize="off">
+      <div class="btn-row">
+        <button class="conj-check-btn" onclick="sbCheck()">Check</button>
+      </div>
+      <div class="conj-feedback" id="sb-feedback"></div>
+    </div>
+    <div class="btn-row">
+      <button class="fc-btn fc-btn-next" onclick="sbNext()">Skip &rarr;</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// =============================================
+// DATA
+// =============================================
+const DATA = {
+  vocabulary: {
+    'Body Parts': [
+      { en: 'head', sr: 'glava' }, { en: 'hair', sr: 'kosa' }, { en: 'face', sr: 'lice' },
+      { en: 'forehead', sr: 'čelo' }, { en: 'nose', sr: 'nos' }, { en: 'ears', sr: 'uši' },
+      { en: 'eyes', sr: 'oči' }, { en: 'eye', sr: 'oko' }, { en: 'mouth', sr: 'usta' },
+      { en: 'lips', sr: 'usne' }, { en: 'cheeks', sr: 'obrazi' }, { en: 'neck', sr: 'vrat' },
+      { en: 'shoulders', sr: 'ramena' }, { en: 'back', sr: 'leđa' }, { en: 'arm', sr: 'ruka' },
+      { en: 'hand', sr: 'šaka' }, { en: 'fingers', sr: 'prsti' }, { en: 'finger', sr: 'prst' },
+      { en: 'belly', sr: 'stomak' }, { en: 'leg', sr: 'noga' }, { en: 'knee', sr: 'koleno' },
+      { en: 'foot', sr: 'stopalo' },
+    ],
+    'Family': [
+      { en: 'mom', sr: 'mama' }, { en: 'mother', sr: 'majka' }, { en: 'dad', sr: 'tata' },
+      { en: 'father', sr: 'otac' }, { en: 'brother', sr: 'brat' }, { en: 'sister', sr: 'sestra' },
+      { en: 'child', sr: 'dete' }, { en: 'wife', sr: 'žena' }, { en: 'husband', sr: 'muž' },
+      { en: 'girlfriend', sr: 'devojka' }, { en: 'male friend', sr: 'prijatelj' },
+      { en: 'female friend', sr: 'prijateljica' }, { en: 'parents', sr: 'roditelji' },
+    ],
+    'Colors': [
+      { en: 'white', sr: 'bela' }, { en: 'black', sr: 'crna' }, { en: 'red', sr: 'crvena' },
+      { en: 'green', sr: 'zelena' }, { en: 'blue', sr: 'plava' }, { en: 'yellow', sr: 'žuta' },
+      { en: 'orange', sr: 'narandžasta' }, { en: 'pink', sr: 'roze' }, { en: 'purple', sr: 'ljubičasta' },
+      { en: 'beige', sr: 'bež' }, { en: 'brown', sr: 'braon' },
+    ],
+    'Food & Fruits': [
+      { en: 'apple', sr: 'jabuka' }, { en: 'strawberry', sr: 'jagoda' }, { en: 'apricot', sr: 'kajsija' },
+      { en: 'peach', sr: 'breskva' }, { en: 'plum', sr: 'šljiva' }, { en: 'lemon', sr: 'limun' },
+      { en: 'orange (fruit)', sr: 'narandža' }, { en: 'fruits', sr: 'voće' }, { en: 'cheese', sr: 'sir' },
+      { en: 'food', sr: 'hrana' }, { en: 'meal', sr: 'jelo' }, { en: 'starter', sr: 'predjelo' },
+      { en: 'sweets', sr: 'poslastice' }, { en: 'roasted meat', sr: 'pečenje' },
+      { en: 'Shopska salad', sr: 'šopska salata' }, { en: 'baklava', sr: 'baklava' },
+    ],
+    'Beverages': [
+      { en: 'juice', sr: 'sok' }, { en: 'tea', sr: 'čaj' }, { en: 'coffee', sr: 'kafa' },
+      { en: 'black tea', sr: 'crni čaj' }, { en: 'black coffee', sr: 'crna kafa' },
+      { en: 'Turkish coffee', sr: 'turska kafa' }, { en: 'red wine', sr: 'crveno vino' },
+      { en: 'beer', sr: 'pivo' }, { en: 'milk', sr: 'mleko' },
+    ],
+    'Restaurant': [
+      { en: 'glass', sr: 'čaša' }, { en: 'bottle', sr: 'flaša' }, { en: 'plate', sr: 'tanjir' },
+      { en: 'spoon', sr: 'kašika' }, { en: 'teaspoon', sr: 'kašičica' }, { en: 'knife', sr: 'nož' },
+      { en: 'fork', sr: 'viljuška' }, { en: 'teapot', sr: 'čajnik' }, { en: 'bill', sr: 'račun' },
+      { en: 'menu', sr: 'meni' },
+    ],
+    'Places': [
+      { en: 'city', sr: 'grad' }, { en: 'center', sr: 'centar' }, { en: 'street', sr: 'ulica' },
+      { en: 'house', sr: 'kuća' }, { en: 'building', sr: 'zgrada' }, { en: 'apartment', sr: 'stan' },
+      { en: 'river', sr: 'reka' }, { en: 'bridge', sr: 'most' }, { en: 'school', sr: 'škola' },
+      { en: 'museum', sr: 'muzej' }, { en: 'post office', sr: 'pošta' }, { en: 'theater', sr: 'pozorište' },
+      { en: 'church', sr: 'crkva' }, { en: 'shop', sr: 'prodavnica' }, { en: 'coffee shop', sr: 'kafić' },
+      { en: 'restaurant', sr: 'restoran' }, { en: 'hospital', sr: 'bolnica' }, { en: 'pharmacy', sr: 'apoteka' },
+      { en: 'stadium', sr: 'stadion' }, { en: 'station', sr: 'stanica' }, { en: 'bank', sr: 'banka' },
+      { en: 'cinema', sr: 'bioskop' }, { en: 'market', sr: 'pijaca' }, { en: 'park', sr: 'park' },
+      { en: 'airport', sr: 'aerodrom' }, { en: 'lake', sr: 'jezero' }, { en: 'bakery', sr: 'pekara' },
+      { en: 'office', sr: 'kancelarija' }, { en: 'room', sr: 'soba' },
+    ],
+    'Directions': [
+      { en: 'here', sr: 'ovde' }, { en: 'there', sr: 'tamo' }, { en: 'nearby', sr: 'blizu' },
+      { en: 'far', sr: 'daleko' }, { en: 'upstairs', sr: 'gore' }, { en: 'downstairs', sr: 'dole' },
+      { en: 'at the corner', sr: 'na uglu' }, { en: 'at the end', sr: 'na kraju' },
+      { en: 'straight', sr: 'pravo' }, { en: 'left', sr: 'levo' }, { en: 'right', sr: 'desno' },
+    ],
+    'Numbers': [
+      { en: '0', sr: 'nula' }, { en: '1', sr: 'jedan' }, { en: '2', sr: 'dva' },
+      { en: '3', sr: 'tri' }, { en: '4', sr: 'četiri' }, { en: '5', sr: 'pet' },
+      { en: '6', sr: 'šest' }, { en: '7', sr: 'sedam' }, { en: '8', sr: 'osam' },
+      { en: '9', sr: 'devet' }, { en: '10', sr: 'deset' }, { en: '11', sr: 'jedanaest' },
+      { en: '12', sr: 'dvanaest' }, { en: '13', sr: 'trinaest' }, { en: '14', sr: 'četrnaest' },
+      { en: '15', sr: 'petnaest' }, { en: '16', sr: 'šesnaest' }, { en: '17', sr: 'sedamnaest' },
+      { en: '18', sr: 'osamnaest' }, { en: '19', sr: 'devetnaest' }, { en: '20', sr: 'dvadeset' },
+      { en: '30', sr: 'trideset' }, { en: '40', sr: 'četrdeset' }, { en: '50', sr: 'pedeset' },
+      { en: '60', sr: 'šezdeset' }, { en: '70', sr: 'sedamdeset' }, { en: '90', sr: 'devedeset' },
+      { en: '100', sr: 'sto' },
+    ],
+    'Days & Time': [
+      { en: 'Monday', sr: 'ponedeljak' }, { en: 'Tuesday', sr: 'utorak' }, { en: 'Wednesday', sr: 'sreda' },
+      { en: 'Thursday', sr: 'četvrtak' }, { en: 'Friday', sr: 'petak' }, { en: 'Saturday', sr: 'subota' },
+      { en: 'Sunday', sr: 'nedelja' }, { en: 'now', sr: 'sada' }, { en: 'yesterday', sr: 'juče' },
+      { en: 'today', sr: 'danas' }, { en: 'tomorrow', sr: 'sutra' }, { en: 'every morning', sr: 'svako jutro' },
+      { en: 'every day', sr: 'svakog dana' }, { en: 'every evening', sr: 'svako veče' },
+      { en: 'often', sr: 'često' }, { en: 'first time', sr: 'prvi put' },
+    ],
+    'Adjectives': [
+      { en: 'big', sr: 'veliki' }, { en: 'small', sr: 'mali' }, { en: 'beautiful', sr: 'lepi' },
+      { en: 'ugly', sr: 'ružni' }, { en: 'old', sr: 'stari' }, { en: 'new', sr: 'novi' },
+      { en: 'good', sr: 'dobar' }, { en: 'bad', sr: 'loš' }, { en: 'excellent', sr: 'odličan' },
+      { en: 'tired', sr: 'umoran' }, { en: 'tall', sr: 'visok' }, { en: 'short', sr: 'nizak' },
+      { en: 'sweet', sr: 'sladak' }, { en: 'open', sr: 'otvoreno' }, { en: 'closed', sr: 'zatvoreno' },
+      { en: 'difficult', sr: 'teško' },
+    ],
+    'Objects': [
+      { en: 'passport', sr: 'pasoš' }, { en: 'glasses', sr: 'naočare' }, { en: 'jacket', sr: 'jakna' },
+      { en: 'coat', sr: 'mantil' }, { en: 'car', sr: 'auto' }, { en: 'computer', sr: 'kompjuter' },
+      { en: 'pencil', sr: 'olovka' }, { en: 'bed', sr: 'krevet' }, { en: 'chair', sr: 'stolica' },
+      { en: 'table', sr: 'sto' }, { en: 'lamp', sr: 'lampa' }, { en: 'door', sr: 'vrata' },
+      { en: 'entrance', sr: 'ulaz' }, { en: 'exit', sr: 'izlaz' }, { en: 'language', sr: 'jezik' },
+      { en: 'music', sr: 'muzika' }, { en: 'book', sr: 'knjiga' }, { en: 'gift', sr: 'poklon' },
+      { en: 'weather', sr: 'vreme' }, { en: 'hour', sr: 'sat' }, { en: 'hotel', sr: 'hotel' },
+      { en: 'carpet', sr: 'tepih' },
+    ],
+    'Weather': [
+      { en: 'sunny', sr: 'sunčano' }, { en: 'sun', sr: 'sunce' }, { en: 'cloudy', sr: 'oblačno' },
+      { en: 'cloud', sr: 'oblak' }, { en: 'rainy', sr: 'kišovito' }, { en: 'rain', sr: 'kiša' },
+      { en: 'snow', sr: 'sneg' }, { en: 'summer', sr: 'leto' },
+    ],
+    'Polite Words': [
+      { en: 'please', sr: 'molim' }, { en: 'thank you', sr: 'hvala' }, { en: 'thanks a lot', sr: 'puno hvala' },
+      { en: 'sorry (informal)', sr: 'izvini' }, { en: 'sorry (formal)', sr: 'izvinite' },
+      { en: 'here you go (informal)', sr: 'izvoli' }, { en: 'here you go (formal)', sr: 'izvolite' },
+      { en: 'deal / okay', sr: 'važi' }, { en: "that's right", sr: 'tako je' },
+      { en: "let's go", sr: 'hajde' }, { en: 'nice to meet you', sr: 'drago mi je' },
+      { en: 'bon appetit', sr: 'prijatno' }, { en: 'good luck', sr: 'srećno' },
+      { en: 'see you', sr: 'vidimo se' }, { en: 'of course', sr: 'naravno' },
+      { en: 'unfortunately', sr: 'nažalost' }, { en: 'luckily', sr: 'na sreću' },
+    ],
+    'Question Words': [
+      { en: 'Who?', sr: 'Ko?' }, { en: 'What?', sr: 'Šta?' }, { en: 'Where?', sr: 'Gde?' },
+      { en: 'When?', sr: 'Kada?' }, { en: 'How?', sr: 'Kako?' }, { en: 'Why?', sr: 'Zašto?' },
+      { en: 'Which?', sr: 'Koji?' }, { en: 'With whom?', sr: 'Sa kim?' },
+      { en: 'How much?', sr: 'Koliko?' },
+    ],
+    'Countries & Languages': [
+      { en: 'Serbia', sr: 'Srbija' }, { en: 'Switzerland', sr: 'Švajcarska' },
+      { en: 'Germany', sr: 'Nemačka' }, { en: 'Japan', sr: 'Japan' },
+      { en: 'Austria', sr: 'Austrija' }, { en: 'Italy', sr: 'Italija' },
+      { en: 'Spain', sr: 'Španija' }, { en: 'Belgrade', sr: 'Beograd' },
+      { en: 'Japanese (language)', sr: 'japanski' }, { en: 'German (language)', sr: 'nemački' },
+      { en: 'French (language)', sr: 'francuski' }, { en: 'English (language)', sr: 'engleski' },
+      { en: 'Serbian (language)', sr: 'srpski' }, { en: 'Chinese (language)', sr: 'kineski' },
+    ],
+  },
+
+  verbs: [
+    { inf: 'biti', en: 'to be', conj: { ja:'sam', ti:'si', 'on/ona/ono':'je', mi:'smo', 'vi/Vi':'ste', oni:'su' }},
+    { inf: 'imati', en: 'to have', conj: { ja:'imam', ti:'imaš', 'on/ona/ono':'ima', mi:'imamo', 'vi/Vi':'imate', oni:'imaju' }},
+    { inf: 'čitati', en: 'to read', conj: { ja:'čitam', ti:'čitaš', 'on/ona/ono':'čita', mi:'čitamo', 'vi/Vi':'čitate', oni:'čitaju' }},
+    { inf: 'leteti', en: 'to fly', conj: { ja:'letim', ti:'letiš', 'on/ona/ono':'leti', mi:'letimo', 'vi/Vi':'letite', oni:'lete' }},
+    { inf: 'putovati', en: 'to travel', conj: { ja:'putujem', ti:'putuješ', 'on/ona/ono':'putuje', mi:'putujemo', 'vi/Vi':'putujete', oni:'putuju' }},
+    { inf: 'raditi', en: 'to work', conj: { ja:'radim', ti:'radiš', 'on/ona/ono':'radi', mi:'radimo', 'vi/Vi':'radite', oni:'rade' }},
+    { inf: 'gledati', en: 'to watch', conj: { ja:'gledam', ti:'gledaš', 'on/ona/ono':'gleda', mi:'gledamo', 'vi/Vi':'gledate', oni:'gledaju' }},
+    { inf: 'razumeti', en: 'to understand', conj: { ja:'razumem', ti:'razumeš', 'on/ona/ono':'razume', mi:'razumemo', 'vi/Vi':'razumete', oni:'razumeju' }},
+    { inf: 'govoriti', en: 'to speak', conj: { ja:'govorim', ti:'govoriš', 'on/ona/ono':'govori', mi:'govorimo', 'vi/Vi':'govorite', oni:'govore' }},
+    { inf: 'učiti', en: 'to learn', conj: { ja:'učim', ti:'učiš', 'on/ona/ono':'uči', mi:'učimo', 'vi/Vi':'učite', oni:'uče' }},
+    { inf: 'pisati', en: 'to write', conj: { ja:'pišem', ti:'pišeš', 'on/ona/ono':'piše', mi:'pišemo', 'vi/Vi':'pišete', oni:'pišu' }},
+    { inf: 'jesti', en: 'to eat', conj: { ja:'jedem', ti:'jedeš', 'on/ona/ono':'jede', mi:'jedemo', 'vi/Vi':'jedete', oni:'jedu' }},
+    { inf: 'piti', en: 'to drink', conj: { ja:'pijem', ti:'piješ', 'on/ona/ono':'pije', mi:'pijemo', 'vi/Vi':'pijete', oni:'piju' }},
+    { inf: 'zvati se', en: 'to be named', conj: { ja:'zovem se', ti:'zoveš se', 'on/ona/ono':'zove se', mi:'zovemo se', 'vi/Vi':'zovete se', oni:'zovu se' }},
+    { inf: 'voziti', en: 'to drive', conj: { ja:'vozim', ti:'voziš', 'on/ona/ono':'vozi', mi:'vozimo', 'vi/Vi':'vozite', oni:'voze' }},
+    { inf: 'želeti', en: 'to want', conj: { ja:'želim', ti:'želiš', 'on/ona/ono':'želi', mi:'želimo', 'vi/Vi':'želite', oni:'žele' }},
+    { inf: 'ići', en: 'to go', conj: { ja:'idem', ti:'ideš', 'on/ona/ono':'ide', mi:'idemo', 'vi/Vi':'idete', oni:'idu' }},
+    { inf: 'doći', en: 'to come', conj: { ja:'dođem', ti:'dođeš', 'on/ona/ono':'dođe', mi:'dođemo', 'vi/Vi':'dođete', oni:'dođu' }},
+    { inf: 'sedeti', en: 'to sit', conj: { ja:'sedim', ti:'sediš', 'on/ona/ono':'sedi', mi:'sedimo', 'vi/Vi':'sedite', oni:'sede' }},
+    { inf: 'kuvati', en: 'to cook', conj: { ja:'kuvam', ti:'kuvaš', 'on/ona/ono':'kuva', mi:'kuvamo', 'vi/Vi':'kuvate', oni:'kuvaju' }},
+    { inf: 'probati', en: 'to try/taste', conj: { ja:'probam', ti:'probaš', 'on/ona/ono':'proba', mi:'probamo', 'vi/Vi':'probate', oni:'probaju' }},
+    { inf: 'naručiti', en: 'to order', conj: { ja:'naručim', ti:'naručiš', 'on/ona/ono':'naruči', mi:'naručimo', 'vi/Vi':'naručite', oni:'naruče' }},
+    { inf: 'platiti', en: 'to pay', conj: { ja:'platim', ti:'platiš', 'on/ona/ono':'plati', mi:'platimo', 'vi/Vi':'platite', oni:'plate' }},
+    { inf: 'voleti', en: 'to love', conj: { ja:'volim', ti:'voliš', 'on/ona/ono':'voli', mi:'volimo', 'vi/Vi':'volite', oni:'vole' }},
+    { inf: 'peći', en: 'to bake', conj: { ja:'pečem', ti:'pečeš', 'on/ona/ono':'peče', mi:'pečemo', 'vi/Vi':'pečete', oni:'peču' }},
+  ],
+
+  cases: {
+    accusative: {
+      name: 'Accusative',
+      usage: 'Direct object (what/whom)',
+      exercises: [
+        { prompt: 'kafa (feminine) → accusative', answer: 'kafu', hint: '"a" → "u" for feminine' },
+        { prompt: 'jabuka (feminine) → accusative', answer: 'jabuku', hint: '"a" → "u" for feminine' },
+        { prompt: 'voda (feminine) → accusative', answer: 'vodu', hint: '"a" → "u" for feminine' },
+        { prompt: 'limun (masc. thing) → accusative', answer: 'limun', hint: 'No change for masc. things' },
+        { prompt: 'sir (masc. thing) → accusative', answer: 'sir', hint: 'No change for masc. things' },
+        { prompt: 'prijatelj (masc. person) → accusative', answer: 'prijatelja', hint: 'Add "a" for masc. persons' },
+        { prompt: 'brat (masc. person) → accusative', answer: 'brata', hint: 'Add "a" for masc. persons' },
+        { prompt: 'muž (masc. person) → accusative', answer: 'muža', hint: 'Add "a" for masc. persons' },
+        { prompt: 'knjiga (feminine) → accusative', answer: 'knjigu', hint: '"a" → "u" for feminine' },
+        { prompt: 'sestra (feminine) → accusative', answer: 'sestru', hint: '"a" → "u" for feminine' },
+      ]
+    },
+    locative: {
+      name: 'Locative',
+      usage: 'Location (where, in what)',
+      exercises: [
+        { prompt: 'aerodrom (masc.) → na ___', answer: 'aerodromu', hint: 'Add "u" for masculine' },
+        { prompt: 'centar (masc.) → u ___', answer: 'centru', hint: 'Add "u" for masculine' },
+        { prompt: 'kuća (fem.) → u ___', answer: 'kući', hint: '"a" → "i" for feminine' },
+        { prompt: 'soba (fem.) → u ___', answer: 'sobi', hint: '"a" → "i" for feminine' },
+        { prompt: 'ulica (fem.) → na ___', answer: 'ulici', hint: '"a" → "i" for feminine' },
+        { prompt: 'škola (fem.) → u ___', answer: 'školi', hint: '"a" → "i" for feminine' },
+        { prompt: 'Srbija (fem.) → u ___', answer: 'Srbiji', hint: '"a" → "i" for feminine' },
+        { prompt: 'Japan (masc.) → u ___', answer: 'Japanu', hint: 'Add "u" for masculine' },
+        { prompt: 'posao (masc.) → na ___', answer: 'poslu', hint: 'Special: consonant "l" insertion' },
+        { prompt: 'Švajcarska (fem.) → u ___', answer: 'Švajcarskoj', hint: 'Adjective-type ending' },
+      ]
+    },
+    genitive: {
+      name: 'Genitive',
+      usage: 'Possession / "of"',
+      exercises: [
+        { prompt: 'knjiga (fem.) → genitive', answer: 'knjige', hint: '"a" → "e" for feminine' },
+        { prompt: 'kompjuter (masc.) → genitive', answer: 'kompjutera', hint: 'Add "a" for masculine' },
+        { prompt: 'pivo (neuter) → genitive', answer: 'piva', hint: '"o" → "a" for neuter' },
+        { prompt: 'kafa (fem.) → genitive', answer: 'kafe', hint: '"a" → "e" for feminine' },
+        { prompt: 'sto (masc.) → genitive', answer: 'stola', hint: 'Add "a" for masculine' },
+        { prompt: 'soba (fem.) → genitive', answer: 'sobe', hint: '"a" → "e" for feminine' },
+        { prompt: 'grad (masc.) → genitive', answer: 'grada', hint: 'Add "a" for masculine' },
+        { prompt: 'jezero (neuter) → genitive', answer: 'jezera', hint: '"o" → "a" for neuter' },
+      ]
+    },
+    instrumental: {
+      name: 'Instrumental',
+      usage: 'With whom / with what',
+      exercises: [
+        { prompt: 'brat → sa ___', answer: 'bratom', hint: 'Add "om" for masculine' },
+        { prompt: 'sestra → sa ___', answer: 'sestrom', hint: 'Add "om" for feminine' },
+        { prompt: 'prijatelj → sa ___', answer: 'prijateljem', hint: 'Exception: use "em"' },
+        { prompt: 'muž → sa ___', answer: 'mužem', hint: 'Exception: use "em"' },
+        { prompt: 'olovka → write with ___ (no preposition)', answer: 'olovkom', hint: '"a" → "om" for feminine tools' },
+        { prompt: 'viljuška → eat with ___ (no preposition)', answer: 'viljuškom', hint: '"a" → "om" for feminine tools' },
+        { prompt: 'nož → cut with ___ (no preposition)', answer: 'nožem', hint: 'Exception: use "em"' },
+        { prompt: 'dete → sa ___', answer: 'detetom', hint: 'Add "om" for neuter' },
+      ]
+    },
+  },
+
+  sentenceExercises: [
+    { english: 'I drink coffee', sentence: 'Ja ___ kafu', blank: 'pijem' },
+    { english: 'I eat a lemon', sentence: 'Ja ___ limun', blank: 'jedem' },
+    { english: 'Do you speak Serbian?', sentence: '___ li srpski?', blank: 'Govoriš' },
+    { english: 'I live in Switzerland', sentence: 'Živim u ___', blank: 'Švajcarskoj' },
+    { english: "My name is Kaito (I'm called Kaito)", sentence: '___ se Kaito', blank: 'Zovem' },
+    { english: 'Can I get...?', sentence: 'Mogu li da ___...?', blank: 'dobijem' },
+    { english: 'Everything was very delicious', sentence: 'Sve je bilo vrlo ___', blank: 'ukusno' },
+    { english: 'I would like Turkish coffee', sentence: 'Ja ___ tursku kafu', blank: 'bih' },
+    { english: "What's new?", sentence: 'Šta ima ___?', blank: 'novo' },
+    { english: "It's good, but it's better in Japan", sentence: 'Dobro je, ali je u Japanu ___', blank: 'bolje' },
+    { english: 'With card, please', sentence: '___, molim', blank: 'Karticom' },
+    { english: 'The food was very good', sentence: 'Hrana je bila veoma ___', blank: 'dobra' },
+    { english: 'I learn Serbian', sentence: 'Ja ___ srpski', blank: 'učim' },
+    { english: 'We go to Belgrade', sentence: 'Mi ___ u Beograd', blank: 'idemo' },
+    { english: 'She speaks German', sentence: 'Ona ___ nemački', blank: 'govori' },
+    { english: 'They read a book', sentence: 'Oni ___ knjigu', blank: 'čitaju' },
+    { english: 'I write with a pencil', sentence: 'Pišem ___', blank: 'olovkom' },
+    { english: 'I walk with my brother', sentence: 'Šetam sa ___', blank: 'bratom' },
+    { english: 'Nice to meet you', sentence: '___ mi je', blank: 'Drago' },
+    { english: 'I was in Serbia', sentence: 'Ja sam ___ u Srbiji', blank: 'bio' },
+    { english: 'Nothing else', sentence: 'Ništa ___', blank: 'više' },
+    { english: 'Something else?', sentence: 'Još ___?', blank: 'nešto' },
+    { english: 'I am not (male)', sentence: '___ sam', blank: 'Nisam' },
+    { english: 'How is it in Switzerland?', sentence: 'Kako je u ___?', blank: 'Švajcarskoj' },
+  ],
+};
+
+// =============================================
+// UTILITIES
+// =============================================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pick(arr, n, exclude) {
+  const filtered = exclude ? arr.filter(x => x !== exclude) : [...arr];
+  return shuffle(filtered).slice(0, n);
+}
+
+function normalize(str) {
+  return str.trim().toLowerCase();
+}
+
+// =============================================
+// NAVIGATION
+// =============================================
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.section).classList.add('active');
+  });
+});
+
+// =============================================
+// FLASHCARDS
+// =============================================
+let fcCategory = Object.keys(DATA.vocabulary)[0];
+let fcCards = [];
+let fcIndex = 0;
+let fcDir = 'en-sr';
+
+function initFlashcards() {
+  const bar = document.getElementById('fc-categories');
+  bar.innerHTML = '';
+  Object.keys(DATA.vocabulary).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === fcCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => {
+      fcCategory = cat;
+      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadFcCards();
+    };
+    bar.appendChild(btn);
+  });
+  loadFcCards();
+}
+
+function loadFcCards() {
+  fcCards = [...DATA.vocabulary[fcCategory]];
+  fcIndex = 0;
+  showFcCard();
+}
+
+function showFcCard() {
+  if (!fcCards.length) return;
+  const card = fcCards[fcIndex];
+  const el = document.getElementById('flashcard');
+  el.classList.remove('flipped');
+
+  const frontLabel = document.getElementById('fc-front-label');
+  const frontWord = document.getElementById('fc-front-word');
+  const backLabel = document.getElementById('fc-back-label');
+  const backWord = document.getElementById('fc-back-word');
+
+  if (fcDir === 'en-sr') {
+    frontLabel.textContent = 'English';
+    frontWord.textContent = card.en;
+    backLabel.textContent = 'Serbian';
+    backWord.textContent = card.sr;
+  } else {
+    frontLabel.textContent = 'Serbian';
+    frontWord.textContent = card.sr;
+    backLabel.textContent = 'English';
+    backWord.textContent = card.en;
+  }
+
+  document.getElementById('fc-counter').textContent = `${fcIndex + 1} / ${fcCards.length}`;
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+}
+
+function fcNext() {
+  fcIndex = (fcIndex + 1) % fcCards.length;
+  showFcCard();
+}
+
+function fcPrev() {
+  fcIndex = (fcIndex - 1 + fcCards.length) % fcCards.length;
+  showFcCard();
+}
+
+function fcShuffle() {
+  fcCards = shuffle(fcCards);
+  fcIndex = 0;
+  showFcCard();
+}
+
+document.querySelectorAll('.dir-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    fcDir = btn.dataset.dir;
+    showFcCard();
+  });
+});
+
+// =============================================
+// QUIZ
+// =============================================
+let quizCategory = Object.keys(DATA.vocabulary)[0];
+let quizPool = [];
+let quizCorrect = 0;
+let quizTotal = 0;
+let quizAnswered = false;
+
+function initQuiz() {
+  const bar = document.getElementById('quiz-categories');
+  bar.innerHTML = '';
+  const cats = ['All', ...Object.keys(DATA.vocabulary)];
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === quizCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => {
+      quizCategory = cat;
+      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      quizCorrect = 0;
+      quizTotal = 0;
+      loadQuiz();
+    };
+    bar.appendChild(btn);
+  });
+  quizCategory = 'All';
+  bar.querySelector('.cat-btn').classList.add('active');
+  loadQuiz();
+}
+
+function getQuizPool() {
+  if (quizCategory === 'All') {
+    return Object.values(DATA.vocabulary).flat();
+  }
+  return DATA.vocabulary[quizCategory];
+}
+
+function loadQuiz() {
+  quizAnswered = false;
+  document.getElementById('quiz-next').style.display = 'none';
+  const pool = getQuizPool();
+  if (pool.length < 4) return;
+
+  const correct = pool[Math.floor(Math.random() * pool.length)];
+  const direction = Math.random() > 0.5 ? 'en-sr' : 'sr-en';
+
+  const promptEl = document.getElementById('quiz-prompt');
+  const labelEl = document.getElementById('quiz-label');
+  const contextEl = document.getElementById('quiz-context');
+
+  if (direction === 'en-sr') {
+    labelEl.textContent = 'Translate to Serbian';
+    promptEl.textContent = correct.en;
+    contextEl.textContent = '';
+  } else {
+    labelEl.textContent = 'Translate to English';
+    promptEl.textContent = correct.sr;
+    contextEl.textContent = '';
+  }
+
+  const wrongChoices = pick(pool, 3, correct);
+  const options = shuffle([correct, ...wrongChoices]);
+
+  const optionsEl = document.getElementById('quiz-options');
+  optionsEl.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = direction === 'en-sr' ? opt.sr : opt.en;
+    btn.onclick = () => handleQuizAnswer(btn, opt === correct, direction === 'en-sr' ? correct.sr : correct.en);
+    optionsEl.appendChild(btn);
+  });
+
+  document.getElementById('quiz-score').textContent = `${quizCorrect} / ${quizTotal}`;
+}
+
+function handleQuizAnswer(btn, isCorrect, correctAnswer) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  quizTotal++;
+
+  document.querySelectorAll('.quiz-option').forEach(b => b.classList.add('disabled'));
+
+  if (isCorrect) {
+    quizCorrect++;
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-option').forEach(b => {
+      if (b.textContent === correctAnswer) b.classList.add('correct');
+    });
+  }
+
+  document.getElementById('quiz-score').textContent = `${quizCorrect} / ${quizTotal}`;
+  document.getElementById('quiz-next').style.display = 'block';
+}
+
+function quizNext() {
+  loadQuiz();
+}
+
+// =============================================
+// CONJUGATION TRAINER
+// =============================================
+const PRONOUNS = ['ja', 'ti', 'on/ona/ono', 'mi', 'vi/Vi', 'oni'];
+let conjStreak = 0;
+let conjBest = 0;
+let conjCurrent = null;
+
+function loadConj() {
+  const verb = DATA.verbs[Math.floor(Math.random() * DATA.verbs.length)];
+  const pronoun = PRONOUNS[Math.floor(Math.random() * PRONOUNS.length)];
+  conjCurrent = { verb, pronoun, answer: verb.conj[pronoun] };
+
+  document.getElementById('conj-verb').textContent = verb.inf;
+  document.getElementById('conj-english').textContent = verb.en;
+  document.getElementById('conj-pronoun').textContent = pronoun;
+  document.getElementById('conj-input').value = '';
+  document.getElementById('conj-input').className = 'conj-input';
+  document.getElementById('conj-feedback').textContent = '';
+  document.getElementById('conj-input').focus();
+}
+
+function conjCheck() {
+  if (!conjCurrent) return;
+  const input = document.getElementById('conj-input');
+  const fb = document.getElementById('conj-feedback');
+  const userAnswer = normalize(input.value);
+  const correct = normalize(conjCurrent.answer);
+
+  if (userAnswer === correct) {
+    input.classList.add('correct');
+    fb.innerHTML = '<span class="text-success">Correct!</span>';
+    conjStreak++;
+    if (conjStreak > conjBest) conjBest = conjStreak;
+    setTimeout(loadConj, 800);
+  } else {
+    input.classList.add('wrong');
+    fb.innerHTML = `<span class="text-error">Answer: ${conjCurrent.answer}</span>`;
+    conjStreak = 0;
+    setTimeout(loadConj, 1500);
+  }
+
+  document.getElementById('conj-streak').textContent = conjStreak;
+  document.getElementById('conj-best').textContent = conjBest;
+}
+
+function conjNext() {
+  conjStreak = 0;
+  document.getElementById('conj-streak').textContent = 0;
+  loadConj();
+}
+
+document.getElementById('conj-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') conjCheck();
+});
+
+// =============================================
+// CASE TRAINER
+// =============================================
+let caseType = 'accusative';
+let caseExercises = [];
+let caseIndex = 0;
+let caseScore = 0;
+let caseTotalAnswered = 0;
+
+function initCases() {
+  const bar = document.getElementById('case-categories');
+  bar.innerHTML = '';
+  Object.keys(DATA.cases).forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (c === caseType ? ' active' : '');
+    btn.textContent = DATA.cases[c].name;
+    btn.onclick = () => {
+      caseType = c;
+      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      caseScore = 0;
+      caseTotalAnswered = 0;
+      loadCaseExercise();
+    };
+    bar.appendChild(btn);
+  });
+  loadCaseExercise();
+}
+
+function loadCaseExercise() {
+  const caseData = DATA.cases[caseType];
+  caseExercises = shuffle(caseData.exercises);
+  caseIndex = 0;
+  showCaseExercise();
+}
+
+function showCaseExercise() {
+  if (!caseExercises.length) return;
+  const ex = caseExercises[caseIndex % caseExercises.length];
+
+  document.getElementById('case-name').textContent = DATA.cases[caseType].name + ' — ' + DATA.cases[caseType].usage;
+  document.getElementById('case-prompt').innerHTML = `<strong>${ex.prompt}</strong>`;
+  document.getElementById('case-hint').textContent = ex.hint;
+  document.getElementById('case-input').value = '';
+  document.getElementById('case-input').className = 'conj-input';
+  document.getElementById('case-feedback').textContent = '';
+  document.getElementById('case-score').textContent = caseScore;
+  document.getElementById('case-total').textContent = caseTotalAnswered;
+  document.getElementById('case-input').focus();
+}
+
+function caseCheck() {
+  const input = document.getElementById('case-input');
+  const fb = document.getElementById('case-feedback');
+  const ex = caseExercises[caseIndex % caseExercises.length];
+  const userAnswer = normalize(input.value);
+  const correct = normalize(ex.answer);
+
+  caseTotalAnswered++;
+
+  if (userAnswer === correct) {
+    input.classList.add('correct');
+    fb.innerHTML = '<span class="text-success">Correct!</span>';
+    caseScore++;
+    setTimeout(() => { caseIndex++; showCaseExercise(); }, 800);
+  } else {
+    input.classList.add('wrong');
+    fb.innerHTML = `<span class="text-error">Answer: ${ex.answer}</span>`;
+    setTimeout(() => { caseIndex++; showCaseExercise(); }, 1500);
+  }
+
+  document.getElementById('case-score').textContent = caseScore;
+  document.getElementById('case-total').textContent = caseTotalAnswered;
+}
+
+function caseNext() {
+  caseIndex++;
+  showCaseExercise();
+}
+
+document.getElementById('case-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') caseCheck();
+});
+
+// =============================================
+// SENTENCE BUILDER
+// =============================================
+let sbExercises = [];
+let sbIndex = 0;
+let sbScore = 0;
+let sbTotalAnswered = 0;
+
+function initSentences() {
+  sbExercises = shuffle([...DATA.sentenceExercises]);
+  sbIndex = 0;
+  sbScore = 0;
+  sbTotalAnswered = 0;
+  showSbExercise();
+}
+
+function showSbExercise() {
+  const ex = sbExercises[sbIndex % sbExercises.length];
+  document.getElementById('sb-english').textContent = ex.english;
+  const parts = ex.sentence.split('___');
+  document.getElementById('sb-sentence').innerHTML = parts[0] + '<span class="sb-blank">&nbsp;</span>' + (parts[1] || '');
+  document.getElementById('sb-input').value = '';
+  document.getElementById('sb-input').className = 'sb-input';
+  document.getElementById('sb-feedback').textContent = '';
+  document.getElementById('sb-score').textContent = sbScore;
+  document.getElementById('sb-total').textContent = sbTotalAnswered;
+  document.getElementById('sb-input').focus();
+}
+
+function sbCheck() {
+  const input = document.getElementById('sb-input');
+  const fb = document.getElementById('sb-feedback');
+  const ex = sbExercises[sbIndex % sbExercises.length];
+  const userAnswer = normalize(input.value);
+  const correct = normalize(ex.blank);
+
+  sbTotalAnswered++;
+
+  if (userAnswer === correct) {
+    input.classList.add('correct');
+    fb.innerHTML = '<span class="text-success">Correct!</span>';
+    sbScore++;
+    setTimeout(() => { sbIndex++; showSbExercise(); }, 800);
+  } else {
+    input.classList.add('wrong');
+    fb.innerHTML = `<span class="text-error">Answer: ${ex.blank}</span>`;
+    setTimeout(() => { sbIndex++; showSbExercise(); }, 1500);
+  }
+
+  document.getElementById('sb-score').textContent = sbScore;
+  document.getElementById('sb-total').textContent = sbTotalAnswered;
+}
+
+function sbNext() {
+  sbIndex++;
+  showSbExercise();
+}
+
+document.getElementById('sb-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sbCheck();
+});
+
+// =============================================
+// INIT
+// =============================================
+initFlashcards();
+initQuiz();
+loadConj();
+initCases();
+initSentences();
+</script>
+</body>
+</html>

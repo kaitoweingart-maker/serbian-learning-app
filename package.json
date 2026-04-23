@@ -1,0 +1,12 @@
+{
+  "name": "serbian-learning-app",
+  "version": "1.0.0",
+  "description": "Serbian language learning app with flashcards, quizzes, and grammar trainers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
