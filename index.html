@@ -6,512 +6,181 @@
 <title>Serbian Learning App</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
-  --primary: #1a5276;
-  --primary-light: #2980b9;
-  --accent: #e74c3c;
-  --success: #27ae60;
-  --warning: #f39c12;
-  --bg: #f5f6fa;
-  --card: #ffffff;
-  --text: #2c3e50;
-  --text-light: #7f8c8d;
-  --border: #dcdde1;
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --primary: #1a5276; --primary-light: #2980b9; --accent: #e74c3c;
+  --success: #27ae60; --warning: #f39c12; --bg: #f5f6fa;
+  --card: #ffffff; --text: #2c3e50; --text-light: #7f8c8d;
+  --border: #dcdde1; --shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
 
 /* NAV */
-nav {
-  background: var(--primary);
-  padding: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.nav-title {
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 12px 20px 4px;
-  letter-spacing: 0.5px;
-}
-
-.nav-tabs {
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
+nav { background: var(--primary); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.nav-title { color: white; font-size: 1.1rem; font-weight: 700; padding: 12px 20px 4px; letter-spacing: 0.5px; }
+.nav-tabs { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .nav-tabs::-webkit-scrollbar { display: none; }
-
-.nav-tab {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.65);
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s;
-}
+.nav-tab { background: none; border: none; color: rgba(255,255,255,0.65); padding: 10px 14px; font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
 .nav-tab:hover { color: rgba(255,255,255,0.9); }
-.nav-tab.active {
-  color: white;
-  border-bottom-color: var(--warning);
-}
+.nav-tab.active { color: white; border-bottom-color: var(--warning); }
 
 /* MAIN */
-main {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 20px 16px;
-}
-
+main { max-width: 700px; margin: 0 auto; padding: 20px 16px; }
 .section { display: none; }
 .section.active { display: block; }
+h2 { font-size: 1.4rem; margin-bottom: 16px; color: var(--primary); }
 
-h2 {
-  font-size: 1.4rem;
-  margin-bottom: 16px;
-  color: var(--primary);
-}
+/* CHAR HELPER */
+.char-helper { position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); display: flex; justify-content: center; gap: 4px; padding: 8px 12px; z-index: 100; box-shadow: 0 -2px 8px rgba(0,0,0,0.15); }
+.char-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 14px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.15s; min-width: 44px; }
+.char-btn:hover, .char-btn:active { background: rgba(255,255,255,0.3); }
 
 /* CATEGORY SELECTOR */
-.category-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.cat-btn {
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  background: var(--card);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
+.category-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.cat-btn { padding: 6px 14px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
 .cat-btn:hover { border-color: var(--primary-light); }
-.cat-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
+.cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.cat-btn.locked { opacity: 0.4; cursor: not-allowed; position: relative; }
+
+/* DASHBOARD */
+.dash-streak { text-align: center; padding: 20px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.dash-streak-num { font-size: 2.5rem; font-weight: 800; }
+.dash-streak-label { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+.dash-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.dash-stat { background: var(--card); border-radius: 12px; padding: 16px; text-align: center; box-shadow: var(--shadow); }
+.dash-stat-num { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.dash-stat-label { font-size: 0.8rem; color: var(--text-light); margin-top: 4px; }
+.dash-start-btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--success); color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-bottom: 24px; transition: background 0.2s; }
+.dash-start-btn:hover { background: #219a52; }
+.dash-start-btn:disabled { background: var(--text-light); cursor: default; }
+.dash-tier { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
+.dash-tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.dash-tier-name { font-weight: 700; font-size: 0.95rem; }
+.dash-tier-pct { font-size: 0.85rem; color: var(--text-light); font-weight: 600; }
+.dash-tier-locked { opacity: 0.5; }
+.dash-tier-locked .dash-tier-name::after { content: ' (locked)'; font-weight: 400; font-size: 0.8rem; color: var(--text-light); }
+.progress-bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--success); border-radius: 5px; transition: width 0.4s; }
+.dash-tier-cats { font-size: 0.75rem; color: var(--text-light); margin-top: 6px; }
 
 /* FLASHCARD */
-.flashcard-container {
-  perspective: 1000px;
-  margin-bottom: 20px;
-}
-
-.flashcard {
-  width: 100%;
-  min-height: 220px;
-  cursor: pointer;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.5s;
-}
+.flashcard-container { perspective: 1000px; margin-bottom: 20px; }
+.flashcard { width: 100%; min-height: 220px; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
 .flashcard.flipped { transform: rotateY(180deg); }
+.flashcard-face { position: absolute; width: 100%; min-height: 220px; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; box-shadow: var(--shadow); }
+.flashcard-front { background: var(--card); border: 2px solid var(--border); }
+.flashcard-back { background: var(--primary); color: white; transform: rotateY(180deg); }
+.flashcard-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.6; }
+.flashcard-word { font-size: 2rem; font-weight: 700; text-align: center; line-height: 1.3; }
+.flashcard-extra { font-size: 0.9rem; margin-top: 10px; opacity: 0.8; text-align: center; }
+.flashcard-hint { font-size: 0.75rem; margin-top: 16px; opacity: 0.4; }
+.flashcard-nav { display: flex; gap: 12px; justify-content: center; align-items: center; }
+.fc-btn { padding: 10px 24px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.fc-btn-prev, .fc-btn-next { background: var(--primary); color: white; }
+.fc-btn-prev:hover, .fc-btn-next:hover { background: var(--primary-light); }
+.fc-btn-shuffle { background: var(--warning); color: white; }
+.fc-counter { font-size: 0.85rem; color: var(--text-light); font-weight: 500; min-width: 60px; text-align: center; }
+.fc-direction { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+.dir-btn { padding: 6px 14px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); font-size: 0.8rem; cursor: pointer; font-weight: 500; }
+.dir-btn.active { background: var(--primary-light); color: white; border-color: var(--primary-light); }
 
-.flashcard-face {
-  position: absolute;
-  width: 100%;
-  min-height: 220px;
-  backface-visibility: hidden;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-  box-shadow: var(--shadow);
-}
+/* SRS BUTTONS (flashcard know/don't know) */
+.srs-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+.srs-btn { padding: 10px 28px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.srs-btn-know { background: var(--success); color: white; }
+.srs-btn-dontknow { background: var(--accent); color: white; }
+.srs-btn:hover { opacity: 0.85; }
 
-.flashcard-front {
-  background: var(--card);
-  border: 2px solid var(--border);
-}
+/* TYPE MODE */
+.fc-type-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; align-items: center; }
+.fc-type-input { padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; text-align: center; width: 240px; outline: none; transition: border-color 0.2s; }
+.fc-type-input:focus { border-color: var(--primary-light); }
+.fc-type-input.correct { border-color: var(--success); background: #d5f5e3; }
+.fc-type-input.wrong { border-color: var(--accent); background: #fadbd8; }
+.toggle-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; align-items: center; }
+.toggle-label { font-size: 0.85rem; color: var(--text-light); font-weight: 500; }
+.toggle { position: relative; width: 44px; height: 24px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 24px; cursor: pointer; transition: 0.3s; }
+.toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+.toggle input:checked + .toggle-slider { background: var(--primary-light); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
 
-.flashcard-back {
-  background: var(--primary);
-  color: white;
-  transform: rotateY(180deg);
-}
+/* REVIEW MODE */
+.review-card { background: var(--card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.review-type-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.review-type-vocab { background: #ebf5fb; color: var(--primary-light); }
+.review-type-conj { background: #fdebd0; color: #e67e22; }
+.review-type-case { background: #fadbd8; color: var(--accent); }
+.review-type-sentence { background: #d5f5e3; color: var(--success); }
+.review-prompt { font-size: 1.6rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+.review-context { font-size: 0.85rem; color: var(--text-light); margin-bottom: 16px; }
+.review-input { padding: 14px 18px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; text-align: center; width: 100%; max-width: 320px; outline: none; transition: border-color 0.2s; }
+.review-input:focus { border-color: var(--primary-light); }
+.review-input.correct { border-color: var(--success); background: #d5f5e3; }
+.review-input.wrong { border-color: var(--accent); background: #fadbd8; }
+.review-feedback { margin-top: 12px; font-size: 1rem; font-weight: 600; min-height: 24px; }
+.review-check-btn { padding: 12px 32px; border: none; border-radius: 10px; background: var(--primary); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.review-check-btn:hover { background: var(--primary-light); }
+.review-progress { text-align: center; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-light); font-weight: 500; }
+.review-options { display: grid; gap: 10px; margin-top: 16px; max-width: 320px; margin-left: auto; margin-right: auto; }
+.review-option { padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); font-size: 1rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.review-option:hover { border-color: var(--primary-light); background: #f0f7ff; }
+.review-option.correct { border-color: var(--success); background: #d5f5e3; }
+.review-option.wrong { border-color: var(--accent); background: #fadbd8; }
+.review-option.disabled { pointer-events: none; }
+.rating-btns { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.rating-btn { padding: 10px 18px; border: none; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.rating-btn:hover { opacity: 0.85; }
+.rating-again { background: var(--accent); color: white; }
+.rating-hard { background: var(--warning); color: white; }
+.rating-good { background: var(--primary-light); color: white; }
+.rating-easy { background: var(--success); color: white; }
+.review-complete { text-align: center; padding: 40px 20px; }
+.review-complete h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 12px; }
+.review-complete p { color: var(--text-light); margin-bottom: 20px; }
 
-.flashcard-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-  opacity: 0.6;
-}
-
-.flashcard-word {
-  font-size: 2rem;
-  font-weight: 700;
-  text-align: center;
-  line-height: 1.3;
-}
-
-.flashcard-extra {
-  font-size: 0.9rem;
-  margin-top: 10px;
-  opacity: 0.8;
-  text-align: center;
-}
-
-.flashcard-hint {
-  font-size: 0.75rem;
-  margin-top: 16px;
-  opacity: 0.4;
-}
-
-.flashcard-nav {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
-}
-
-.fc-btn {
-  padding: 10px 24px;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.fc-btn-prev, .fc-btn-next {
-  background: var(--primary);
-  color: white;
-}
-.fc-btn-prev:hover, .fc-btn-next:hover {
-  background: var(--primary-light);
-}
-.fc-btn-shuffle {
-  background: var(--warning);
-  color: white;
-}
-
-.fc-counter {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  font-weight: 500;
-  min-width: 60px;
-  text-align: center;
-}
-
-.fc-direction {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.dir-btn {
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: var(--card);
-  font-size: 0.8rem;
-  cursor: pointer;
-  font-weight: 500;
-}
-.dir-btn.active {
-  background: var(--primary-light);
-  color: white;
-  border-color: var(--primary-light);
-}
-
-/* QUIZ */
-.quiz-question {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.quiz-prompt-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-light);
-  margin-bottom: 8px;
-}
-
-.quiz-prompt {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 4px;
-}
-
-.quiz-context {
-  font-size: 0.85rem;
-  color: var(--text-light);
-}
-
-.quiz-options {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.quiz-option {
-  padding: 14px 20px;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: var(--card);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-  font-weight: 500;
-}
-.quiz-option:hover { border-color: var(--primary-light); background: #f0f7ff; }
-.quiz-option.correct {
-  border-color: var(--success);
-  background: #d5f5e3;
-  color: var(--success);
-}
-.quiz-option.wrong {
-  border-color: var(--accent);
-  background: #fadbd8;
-  color: var(--accent);
-}
-.quiz-option.disabled { pointer-events: none; }
-
-.quiz-score {
-  text-align: center;
-  padding: 12px;
-  background: var(--card);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  margin-bottom: 12px;
-}
-
-.quiz-score-num {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.quiz-next-btn {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.quiz-next-btn:hover { background: var(--primary-light); }
-
-/* CONJUGATION TRAINER */
-.conj-card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.conj-verb {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.conj-english {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 16px;
-}
-
-.conj-pronoun {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--accent);
-  margin-bottom: 16px;
-}
-
-.conj-input-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.conj-input {
-  padding: 12px 16px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  font-size: 1.1rem;
-  text-align: center;
-  width: 240px;
-  outline: none;
-  transition: border-color 0.2s;
-}
+/* QUIZ/CONJ/CASE/SENTENCE STYLES */
+.quiz-question { background: var(--card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.quiz-prompt-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 8px; }
+.quiz-prompt { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+.quiz-context { font-size: 0.85rem; color: var(--text-light); }
+.conj-card { background: var(--card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.conj-verb { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+.conj-english { font-size: 0.9rem; color: var(--text-light); margin-bottom: 16px; }
+.conj-pronoun { font-size: 1.3rem; font-weight: 600; color: var(--accent); margin-bottom: 16px; }
+.conj-input-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
+.conj-input { padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; text-align: center; width: 240px; outline: none; transition: border-color 0.2s; }
 .conj-input:focus { border-color: var(--primary-light); }
 .conj-input.correct { border-color: var(--success); background: #d5f5e3; }
 .conj-input.wrong { border-color: var(--accent); background: #fadbd8; }
-
-.conj-check-btn {
-  padding: 12px 28px;
-  border: none;
-  border-radius: 10px;
-  background: var(--primary);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.conj-feedback {
-  margin-top: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  min-height: 24px;
-}
-
-.conj-streak {
-  text-align: center;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
-  color: var(--text-light);
-}
-
-.conj-streak span {
-  font-weight: 700;
-  color: var(--primary);
-}
-
-/* CASE TRAINER */
-.case-card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.case-name {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--primary-light);
-  margin-bottom: 4px;
-}
-
-.case-prompt {
-  font-size: 1.2rem;
-  color: var(--text);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.case-prompt strong {
-  color: var(--accent);
-  font-size: 1.4rem;
-}
-
-.case-hint {
-  font-size: 0.8rem;
-  color: var(--text-light);
-  margin-bottom: 12px;
-}
-
-/* SENTENCE BUILDER */
-.sb-card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-}
-
-.sb-english {
-  font-size: 1rem;
-  color: var(--text-light);
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.sb-sentence {
-  font-size: 1.3rem;
-  text-align: center;
-  margin-bottom: 16px;
-  line-height: 1.8;
-}
-
-.sb-blank {
-  display: inline-block;
-  border-bottom: 3px solid var(--primary-light);
-  min-width: 100px;
-  padding: 2px 4px;
-  margin: 0 4px;
-}
-
-.sb-input {
-  padding: 12px 16px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  font-size: 1.1rem;
-  text-align: center;
-  width: 100%;
-  max-width: 300px;
-  display: block;
-  margin: 0 auto 12px;
-  outline: none;
-}
+.conj-check-btn { padding: 12px 28px; border: none; border-radius: 10px; background: var(--primary); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.conj-feedback { margin-top: 12px; font-size: 1rem; font-weight: 600; min-height: 24px; }
+.conj-streak { text-align: center; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-light); }
+.conj-streak span { font-weight: 700; color: var(--primary); }
+.case-card { background: var(--card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
+.case-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-light); margin-bottom: 4px; }
+.case-prompt { font-size: 1.2rem; color: var(--text); margin-bottom: 16px; line-height: 1.5; }
+.case-prompt strong { color: var(--accent); font-size: 1.4rem; }
+.case-hint { font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px; }
+.sb-card { background: var(--card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.sb-english { font-size: 1rem; color: var(--text-light); margin-bottom: 12px; text-align: center; }
+.sb-sentence { font-size: 1.3rem; text-align: center; margin-bottom: 16px; line-height: 1.8; }
+.sb-blank { display: inline-block; border-bottom: 3px solid var(--primary-light); min-width: 100px; padding: 2px 4px; margin: 0 4px; }
+.sb-input { padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.1rem; text-align: center; width: 100%; max-width: 300px; display: block; margin: 0 auto 12px; outline: none; }
 .sb-input:focus { border-color: var(--primary-light); }
 .sb-input.correct { border-color: var(--success); background: #d5f5e3; }
 .sb-input.wrong { border-color: var(--accent); background: #fadbd8; }
-
-/* SHARED UTILITY */
 .text-success { color: var(--success); }
 .text-error { color: var(--accent); }
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
+.btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+.srs-box-indicator { font-size: 0.7rem; color: var(--text-light); margin-top: 4px; }
 
-.btn-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-/* RESPONSIVE */
 @media (max-width: 480px) {
   .flashcard-word { font-size: 1.5rem; }
-  .quiz-prompt { font-size: 1.4rem; }
-  .nav-tab { padding: 10px 12px; font-size: 0.8rem; }
+  .review-prompt { font-size: 1.3rem; }
+  .nav-tab { padding: 10px 10px; font-size: 0.75rem; }
   main { padding: 16px 12px; }
+  .char-btn { padding: 8px 10px; font-size: 1rem; min-width: 38px; }
 }
 </style>
 </head>
@@ -520,69 +189,125 @@ h2 {
 <nav>
   <div class="nav-title">Serbian Learning</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" data-section="flashcards">Flashcards</button>
-    <button class="nav-tab" data-section="quiz">Quiz</button>
-    <button class="nav-tab" data-section="conjugation">Conjugation</button>
+    <button class="nav-tab active" data-section="dashboard">Home</button>
+    <button class="nav-tab" data-section="flashcards">Cards</button>
+    <button class="nav-tab" data-section="review">Review</button>
+    <button class="nav-tab" data-section="conjugation">Verbs</button>
     <button class="nav-tab" data-section="cases">Cases</button>
     <button class="nav-tab" data-section="sentences">Sentences</button>
   </div>
 </nav>
 
 <main>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="section active">
+    <div class="dash-streak">
+      <div class="dash-streak-num" id="dash-streak">0</div>
+      <div class="dash-streak-label">day streak</div>
+    </div>
+    <div class="dash-stats">
+      <div class="dash-stat">
+        <div class="dash-stat-num" id="dash-due">0</div>
+        <div class="dash-stat-label">Cards Due</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-num" id="dash-new">0</div>
+        <div class="dash-stat-label">New Available</div>
+      </div>
+    </div>
+    <button class="dash-start-btn" id="dash-start-btn" onclick="launchReview()">Start Review</button>
+    <h2>Progress</h2>
+    <div id="dash-tiers"></div>
+  </div>
 
   <!-- FLASHCARDS -->
-  <div id="flashcards" class="section active">
+  <div id="flashcards" class="section">
     <h2>Flashcards</h2>
     <div class="category-bar" id="fc-categories"></div>
-    <div class="fc-direction">
-      <button class="dir-btn active" data-dir="en-sr">English &rarr; Serbian</button>
-      <button class="dir-btn" data-dir="sr-en">Serbian &rarr; English</button>
+    <div class="toggle-row">
+      <span class="toggle-label">Type Mode</span>
+      <label class="toggle"><input type="checkbox" id="fc-type-toggle" onchange="toggleTypeMode()"><span class="toggle-slider"></span></label>
     </div>
-    <div class="flashcard-container">
-      <div class="flashcard" id="flashcard" onclick="flipCard()">
-        <div class="flashcard-face flashcard-front">
-          <div class="flashcard-label" id="fc-front-label">English</div>
-          <div class="flashcard-word" id="fc-front-word"></div>
-          <div class="flashcard-extra" id="fc-front-extra"></div>
-          <div class="flashcard-hint">Tap to flip</div>
+    <div class="fc-direction" id="fc-dir-row">
+      <button class="dir-btn active" data-dir="en-sr">EN &rarr; SR</button>
+      <button class="dir-btn" data-dir="sr-en">SR &rarr; EN</button>
+    </div>
+    <div id="fc-flip-mode">
+      <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="flashcard-face flashcard-front">
+            <div class="flashcard-label" id="fc-front-label">English</div>
+            <div class="flashcard-word" id="fc-front-word"></div>
+            <div class="flashcard-hint">Tap to flip</div>
+          </div>
+          <div class="flashcard-face flashcard-back">
+            <div class="flashcard-label" id="fc-back-label">Serbian</div>
+            <div class="flashcard-word" id="fc-back-word"></div>
+          </div>
         </div>
-        <div class="flashcard-face flashcard-back">
-          <div class="flashcard-label" id="fc-back-label">Serbian</div>
-          <div class="flashcard-word" id="fc-back-word"></div>
-          <div class="flashcard-extra" id="fc-back-extra"></div>
+      </div>
+      <div class="srs-btns" id="fc-srs-btns" style="display:none">
+        <button class="srs-btn srs-btn-dontknow" onclick="fcRate(false)">Don't Know</button>
+        <button class="srs-btn srs-btn-know" onclick="fcRate(true)">Know It</button>
+      </div>
+    </div>
+    <div id="fc-type-mode" style="display:none">
+      <div class="review-card">
+        <div class="flashcard-label" id="fc-type-label">English</div>
+        <div class="review-prompt" id="fc-type-prompt"></div>
+        <div class="fc-type-row">
+          <input type="text" class="fc-type-input" id="fc-type-input" placeholder="Type answer..." autocomplete="off" autocapitalize="off">
+          <button class="conj-check-btn" onclick="fcTypeCheck()">Check</button>
+        </div>
+        <div class="review-feedback" id="fc-type-feedback"></div>
+        <div class="srs-btns" id="fc-type-srs" style="display:none">
+          <button class="srs-btn srs-btn-dontknow" onclick="fcRate(false)">Don't Know</button>
+          <button class="srs-btn srs-btn-know" onclick="fcRate(true)">Know It</button>
         </div>
       </div>
     </div>
     <div class="flashcard-nav">
-      <button class="fc-btn fc-btn-prev" onclick="fcPrev()">&larr; Prev</button>
+      <button class="fc-btn fc-btn-prev" onclick="fcPrev()">&larr;</button>
       <span class="fc-counter" id="fc-counter">1 / 10</span>
       <button class="fc-btn fc-btn-next" onclick="fcNext()">Next &rarr;</button>
-      <button class="fc-btn fc-btn-shuffle" onclick="fcShuffle()">Shuffle</button>
     </div>
   </div>
 
-  <!-- QUIZ -->
-  <div id="quiz" class="section">
-    <h2>Quiz</h2>
-    <div class="category-bar" id="quiz-categories"></div>
-    <div class="quiz-score">
-      Score: <span class="quiz-score-num" id="quiz-score">0 / 0</span>
+  <!-- REVIEW -->
+  <div id="review" class="section">
+    <div class="review-progress" id="review-progress">0 / 0</div>
+    <div id="review-content">
+      <div class="review-card" id="review-card">
+        <div class="review-type-badge" id="review-badge">VOCAB</div>
+        <div class="review-prompt" id="review-prompt"></div>
+        <div class="review-context" id="review-context"></div>
+        <div id="review-input-area">
+          <input type="text" class="review-input" id="review-input" placeholder="Type your answer..." autocomplete="off" autocapitalize="off">
+          <button class="review-check-btn" id="review-check-btn" onclick="reviewCheck()">Check</button>
+        </div>
+        <div id="review-mc-area" style="display:none">
+          <div class="review-options" id="review-options"></div>
+        </div>
+        <div class="review-feedback" id="review-feedback"></div>
+        <div class="rating-btns" id="review-rating" style="display:none">
+          <button class="rating-btn rating-again" onclick="reviewRate(0)">Again</button>
+          <button class="rating-btn rating-hard" onclick="reviewRate(1)">Hard</button>
+          <button class="rating-btn rating-good" onclick="reviewRate(2)">Good</button>
+          <button class="rating-btn rating-easy" onclick="reviewRate(3)">Easy</button>
+        </div>
+      </div>
     </div>
-    <div class="quiz-question">
-      <div class="quiz-prompt-label" id="quiz-label">Translate to Serbian</div>
-      <div class="quiz-prompt" id="quiz-prompt"></div>
-      <div class="quiz-context" id="quiz-context"></div>
+    <div id="review-complete" class="review-complete" style="display:none">
+      <h3>Session Complete!</h3>
+      <p id="review-summary"></p>
+      <button class="dash-start-btn" onclick="switchTab('dashboard')">Back to Dashboard</button>
     </div>
-    <div class="quiz-options" id="quiz-options"></div>
-    <button class="quiz-next-btn" id="quiz-next" onclick="quizNext()" style="display:none">Next Question &rarr;</button>
   </div>
 
   <!-- CONJUGATION -->
   <div id="conjugation" class="section">
     <h2>Conjugation Trainer</h2>
-    <div class="conj-streak">
-      Streak: <span id="conj-streak">0</span> | Best: <span id="conj-best">0</span>
-    </div>
+    <div class="conj-streak">Streak: <span id="conj-streak">0</span> | Best: <span id="conj-best">0</span></div>
     <div class="conj-card">
       <div class="conj-verb" id="conj-verb"></div>
       <div class="conj-english" id="conj-english"></div>
@@ -602,9 +327,7 @@ h2 {
   <div id="cases" class="section">
     <h2>Case Trainer</h2>
     <div class="category-bar" id="case-categories"></div>
-    <div class="conj-streak">
-      Score: <span id="case-score">0</span> / <span id="case-total">0</span>
-    </div>
+    <div class="conj-streak">Score: <span id="case-score">0</span> / <span id="case-total">0</span></div>
     <div class="case-card">
       <div class="case-name" id="case-name"></div>
       <div class="case-prompt" id="case-prompt"></div>
@@ -623,9 +346,7 @@ h2 {
   <!-- SENTENCES -->
   <div id="sentences" class="section">
     <h2>Sentence Builder</h2>
-    <div class="conj-streak">
-      Score: <span id="sb-score">0</span> / <span id="sb-total">0</span>
-    </div>
+    <div class="conj-streak">Score: <span id="sb-score">0</span> / <span id="sb-total">0</span></div>
     <div class="sb-card">
       <div class="sb-english" id="sb-english"></div>
       <div class="sb-sentence" id="sb-sentence"></div>
@@ -639,8 +360,19 @@ h2 {
       <button class="fc-btn fc-btn-next" onclick="sbNext()">Skip &rarr;</button>
     </div>
   </div>
-
 </main>
+
+<!-- SERBIAN CHARACTER HELPER -->
+<div class="char-helper">
+  <button class="char-btn" onclick="insertChar('č')">č</button>
+  <button class="char-btn" onclick="insertChar('ć')">ć</button>
+  <button class="char-btn" onclick="insertChar('š')">š</button>
+  <button class="char-btn" onclick="insertChar('ž')">ž</button>
+  <button class="char-btn" onclick="insertChar('đ')">đ</button>
+  <button class="char-btn" onclick="insertChar('Č')" style="font-size:0.8rem">Č</button>
+  <button class="char-btn" onclick="insertChar('Š')" style="font-size:0.8rem">Š</button>
+  <button class="char-btn" onclick="insertChar('Ž')" style="font-size:0.8rem">Ž</button>
+</div>
 
 <script>
 // =============================================
@@ -648,28 +380,39 @@ h2 {
 // =============================================
 const DATA = {
   vocabulary: {
-    'Body Parts': [
-      { en: 'head', sr: 'glava' }, { en: 'hair', sr: 'kosa' }, { en: 'face', sr: 'lice' },
-      { en: 'forehead', sr: 'čelo' }, { en: 'nose', sr: 'nos' }, { en: 'ears', sr: 'uši' },
-      { en: 'eyes', sr: 'oči' }, { en: 'eye', sr: 'oko' }, { en: 'mouth', sr: 'usta' },
-      { en: 'lips', sr: 'usne' }, { en: 'cheeks', sr: 'obrazi' }, { en: 'neck', sr: 'vrat' },
-      { en: 'shoulders', sr: 'ramena' }, { en: 'back', sr: 'leđa' }, { en: 'arm', sr: 'ruka' },
-      { en: 'hand', sr: 'šaka' }, { en: 'fingers', sr: 'prsti' }, { en: 'finger', sr: 'prst' },
-      { en: 'belly', sr: 'stomak' }, { en: 'leg', sr: 'noga' }, { en: 'knee', sr: 'koleno' },
-      { en: 'foot', sr: 'stopalo' },
+    'Pronouns & Basics': [
+      { en: 'I', sr: 'ja' }, { en: 'you (informal)', sr: 'ti' }, { en: 'he', sr: 'on' },
+      { en: 'she', sr: 'ona' }, { en: 'it', sr: 'ono' }, { en: 'we', sr: 'mi' },
+      { en: 'you (formal/plural)', sr: 'vi' }, { en: 'they', sr: 'oni' },
+      { en: 'yes', sr: 'da' }, { en: 'no', sr: 'ne' }, { en: 'and', sr: 'i' },
+      { en: 'but', sr: 'ali' }, { en: 'or', sr: 'ili' }, { en: 'because', sr: 'jer' },
+      { en: 'if', sr: 'ako' }, { en: 'this', sr: 'ovo' }, { en: 'that', sr: 'to' },
+      { en: 'everything', sr: 'sve' }, { en: 'nothing', sr: 'ništa' },
+      { en: 'something', sr: 'nešto' }, { en: 'someone', sr: 'neko' },
+      { en: 'a lot', sr: 'mnogo' }, { en: 'a little', sr: 'malo' },
+      { en: 'very', sr: 'veoma' }, { en: 'only', sr: 'samo' },
     ],
-    'Family': [
-      { en: 'mom', sr: 'mama' }, { en: 'mother', sr: 'majka' }, { en: 'dad', sr: 'tata' },
-      { en: 'father', sr: 'otac' }, { en: 'brother', sr: 'brat' }, { en: 'sister', sr: 'sestra' },
-      { en: 'child', sr: 'dete' }, { en: 'wife', sr: 'žena' }, { en: 'husband', sr: 'muž' },
-      { en: 'girlfriend', sr: 'devojka' }, { en: 'male friend', sr: 'prijatelj' },
-      { en: 'female friend', sr: 'prijateljica' }, { en: 'parents', sr: 'roditelji' },
+    'Question Words': [
+      { en: 'Who?', sr: 'Ko?' }, { en: 'What?', sr: 'Šta?' }, { en: 'Where?', sr: 'Gde?' },
+      { en: 'When?', sr: 'Kada?' }, { en: 'How?', sr: 'Kako?' }, { en: 'Why?', sr: 'Zašto?' },
+      { en: 'Which?', sr: 'Koji?' }, { en: 'With whom?', sr: 'Sa kim?' },
+      { en: 'How much?', sr: 'Koliko?' },
     ],
-    'Colors': [
-      { en: 'white', sr: 'bela' }, { en: 'black', sr: 'crna' }, { en: 'red', sr: 'crvena' },
-      { en: 'green', sr: 'zelena' }, { en: 'blue', sr: 'plava' }, { en: 'yellow', sr: 'žuta' },
-      { en: 'orange', sr: 'narandžasta' }, { en: 'pink', sr: 'roze' }, { en: 'purple', sr: 'ljubičasta' },
-      { en: 'beige', sr: 'bež' }, { en: 'brown', sr: 'braon' },
+    'Polite Words': [
+      { en: 'please', sr: 'molim' }, { en: 'thank you', sr: 'hvala' }, { en: 'thanks a lot', sr: 'puno hvala' },
+      { en: 'sorry (informal)', sr: 'izvini' }, { en: 'sorry (formal)', sr: 'izvinite' },
+      { en: 'here you go (informal)', sr: 'izvoli' }, { en: 'here you go (formal)', sr: 'izvolite' },
+      { en: 'deal / okay', sr: 'važi' }, { en: "that's right", sr: 'tako je' },
+      { en: "let's go", sr: 'hajde' }, { en: 'nice to meet you', sr: 'drago mi je' },
+      { en: 'bon appetit', sr: 'prijatno' }, { en: 'good luck', sr: 'srećno' },
+      { en: 'see you', sr: 'vidimo se' }, { en: 'of course', sr: 'naravno' },
+      { en: 'unfortunately', sr: 'nažalost' }, { en: 'luckily', sr: 'na sreću' },
+    ],
+    'Numbers (Basic)': [
+      { en: '0', sr: 'nula' }, { en: '1', sr: 'jedan' }, { en: '2', sr: 'dva' },
+      { en: '3', sr: 'tri' }, { en: '4', sr: 'četiri' }, { en: '5', sr: 'pet' },
+      { en: '6', sr: 'šest' }, { en: '7', sr: 'sedam' }, { en: '8', sr: 'osam' },
+      { en: '9', sr: 'devet' }, { en: '10', sr: 'deset' },
     ],
     'Food & Fruits': [
       { en: 'apple', sr: 'jabuka' }, { en: 'strawberry', sr: 'jagoda' }, { en: 'apricot', sr: 'kajsija' },
@@ -685,12 +428,6 @@ const DATA = {
       { en: 'Turkish coffee', sr: 'turska kafa' }, { en: 'red wine', sr: 'crveno vino' },
       { en: 'beer', sr: 'pivo' }, { en: 'milk', sr: 'mleko' },
     ],
-    'Restaurant': [
-      { en: 'glass', sr: 'čaša' }, { en: 'bottle', sr: 'flaša' }, { en: 'plate', sr: 'tanjir' },
-      { en: 'spoon', sr: 'kašika' }, { en: 'teaspoon', sr: 'kašičica' }, { en: 'knife', sr: 'nož' },
-      { en: 'fork', sr: 'viljuška' }, { en: 'teapot', sr: 'čajnik' }, { en: 'bill', sr: 'račun' },
-      { en: 'menu', sr: 'meni' },
-    ],
     'Places': [
       { en: 'city', sr: 'grad' }, { en: 'center', sr: 'centar' }, { en: 'street', sr: 'ulica' },
       { en: 'house', sr: 'kuća' }, { en: 'building', sr: 'zgrada' }, { en: 'apartment', sr: 'stan' },
@@ -703,24 +440,6 @@ const DATA = {
       { en: 'airport', sr: 'aerodrom' }, { en: 'lake', sr: 'jezero' }, { en: 'bakery', sr: 'pekara' },
       { en: 'office', sr: 'kancelarija' }, { en: 'room', sr: 'soba' },
     ],
-    'Directions': [
-      { en: 'here', sr: 'ovde' }, { en: 'there', sr: 'tamo' }, { en: 'nearby', sr: 'blizu' },
-      { en: 'far', sr: 'daleko' }, { en: 'upstairs', sr: 'gore' }, { en: 'downstairs', sr: 'dole' },
-      { en: 'at the corner', sr: 'na uglu' }, { en: 'at the end', sr: 'na kraju' },
-      { en: 'straight', sr: 'pravo' }, { en: 'left', sr: 'levo' }, { en: 'right', sr: 'desno' },
-    ],
-    'Numbers': [
-      { en: '0', sr: 'nula' }, { en: '1', sr: 'jedan' }, { en: '2', sr: 'dva' },
-      { en: '3', sr: 'tri' }, { en: '4', sr: 'četiri' }, { en: '5', sr: 'pet' },
-      { en: '6', sr: 'šest' }, { en: '7', sr: 'sedam' }, { en: '8', sr: 'osam' },
-      { en: '9', sr: 'devet' }, { en: '10', sr: 'deset' }, { en: '11', sr: 'jedanaest' },
-      { en: '12', sr: 'dvanaest' }, { en: '13', sr: 'trinaest' }, { en: '14', sr: 'četrnaest' },
-      { en: '15', sr: 'petnaest' }, { en: '16', sr: 'šesnaest' }, { en: '17', sr: 'sedamnaest' },
-      { en: '18', sr: 'osamnaest' }, { en: '19', sr: 'devetnaest' }, { en: '20', sr: 'dvadeset' },
-      { en: '30', sr: 'trideset' }, { en: '40', sr: 'četrdeset' }, { en: '50', sr: 'pedeset' },
-      { en: '60', sr: 'šezdeset' }, { en: '70', sr: 'sedamdeset' }, { en: '90', sr: 'devedeset' },
-      { en: '100', sr: 'sto' },
-    ],
     'Days & Time': [
       { en: 'Monday', sr: 'ponedeljak' }, { en: 'Tuesday', sr: 'utorak' }, { en: 'Wednesday', sr: 'sreda' },
       { en: 'Thursday', sr: 'četvrtak' }, { en: 'Friday', sr: 'petak' }, { en: 'Saturday', sr: 'subota' },
@@ -728,6 +447,25 @@ const DATA = {
       { en: 'today', sr: 'danas' }, { en: 'tomorrow', sr: 'sutra' }, { en: 'every morning', sr: 'svako jutro' },
       { en: 'every day', sr: 'svakog dana' }, { en: 'every evening', sr: 'svako veče' },
       { en: 'often', sr: 'često' }, { en: 'first time', sr: 'prvi put' },
+    ],
+    'Directions': [
+      { en: 'here', sr: 'ovde' }, { en: 'there', sr: 'tamo' }, { en: 'nearby', sr: 'blizu' },
+      { en: 'far', sr: 'daleko' }, { en: 'upstairs', sr: 'gore' }, { en: 'downstairs', sr: 'dole' },
+      { en: 'at the corner', sr: 'na uglu' }, { en: 'at the end', sr: 'na kraju' },
+      { en: 'straight', sr: 'pravo' }, { en: 'left', sr: 'levo' }, { en: 'right', sr: 'desno' },
+    ],
+    'Family': [
+      { en: 'mom', sr: 'mama' }, { en: 'mother', sr: 'majka' }, { en: 'dad', sr: 'tata' },
+      { en: 'father', sr: 'otac' }, { en: 'brother', sr: 'brat' }, { en: 'sister', sr: 'sestra' },
+      { en: 'child', sr: 'dete' }, { en: 'wife', sr: 'žena' }, { en: 'husband', sr: 'muž' },
+      { en: 'girlfriend', sr: 'devojka' }, { en: 'male friend', sr: 'prijatelj' },
+      { en: 'female friend', sr: 'prijateljica' }, { en: 'parents', sr: 'roditelji' },
+    ],
+    'Colors': [
+      { en: 'white', sr: 'bela' }, { en: 'black', sr: 'crna' }, { en: 'red', sr: 'crvena' },
+      { en: 'green', sr: 'zelena' }, { en: 'blue', sr: 'plava' }, { en: 'yellow', sr: 'žuta' },
+      { en: 'orange', sr: 'narandžasta' }, { en: 'pink', sr: 'roze' }, { en: 'purple', sr: 'ljubičasta' },
+      { en: 'beige', sr: 'bež' }, { en: 'brown', sr: 'braon' },
     ],
     'Adjectives': [
       { en: 'big', sr: 'veliki' }, { en: 'small', sr: 'mali' }, { en: 'beautiful', sr: 'lepi' },
@@ -752,21 +490,15 @@ const DATA = {
       { en: 'cloud', sr: 'oblak' }, { en: 'rainy', sr: 'kišovito' }, { en: 'rain', sr: 'kiša' },
       { en: 'snow', sr: 'sneg' }, { en: 'summer', sr: 'leto' },
     ],
-    'Polite Words': [
-      { en: 'please', sr: 'molim' }, { en: 'thank you', sr: 'hvala' }, { en: 'thanks a lot', sr: 'puno hvala' },
-      { en: 'sorry (informal)', sr: 'izvini' }, { en: 'sorry (formal)', sr: 'izvinite' },
-      { en: 'here you go (informal)', sr: 'izvoli' }, { en: 'here you go (formal)', sr: 'izvolite' },
-      { en: 'deal / okay', sr: 'važi' }, { en: "that's right", sr: 'tako je' },
-      { en: "let's go", sr: 'hajde' }, { en: 'nice to meet you', sr: 'drago mi je' },
-      { en: 'bon appetit', sr: 'prijatno' }, { en: 'good luck', sr: 'srećno' },
-      { en: 'see you', sr: 'vidimo se' }, { en: 'of course', sr: 'naravno' },
-      { en: 'unfortunately', sr: 'nažalost' }, { en: 'luckily', sr: 'na sreću' },
-    ],
-    'Question Words': [
-      { en: 'Who?', sr: 'Ko?' }, { en: 'What?', sr: 'Šta?' }, { en: 'Where?', sr: 'Gde?' },
-      { en: 'When?', sr: 'Kada?' }, { en: 'How?', sr: 'Kako?' }, { en: 'Why?', sr: 'Zašto?' },
-      { en: 'Which?', sr: 'Koji?' }, { en: 'With whom?', sr: 'Sa kim?' },
-      { en: 'How much?', sr: 'Koliko?' },
+    'Body Parts': [
+      { en: 'head', sr: 'glava' }, { en: 'hair', sr: 'kosa' }, { en: 'face', sr: 'lice' },
+      { en: 'forehead', sr: 'čelo' }, { en: 'nose', sr: 'nos' }, { en: 'ears', sr: 'uši' },
+      { en: 'eyes', sr: 'oči' }, { en: 'eye', sr: 'oko' }, { en: 'mouth', sr: 'usta' },
+      { en: 'lips', sr: 'usne' }, { en: 'cheeks', sr: 'obrazi' }, { en: 'neck', sr: 'vrat' },
+      { en: 'shoulders', sr: 'ramena' }, { en: 'back', sr: 'leđa' }, { en: 'arm', sr: 'ruka' },
+      { en: 'hand', sr: 'šaka' }, { en: 'fingers', sr: 'prsti' }, { en: 'finger', sr: 'prst' },
+      { en: 'belly', sr: 'stomak' }, { en: 'leg', sr: 'noga' }, { en: 'knee', sr: 'koleno' },
+      { en: 'foot', sr: 'stopalo' },
     ],
     'Countries & Languages': [
       { en: 'Serbia', sr: 'Srbija' }, { en: 'Switzerland', sr: 'Švajcarska' },
@@ -777,40 +509,54 @@ const DATA = {
       { en: 'French (language)', sr: 'francuski' }, { en: 'English (language)', sr: 'engleski' },
       { en: 'Serbian (language)', sr: 'srpski' }, { en: 'Chinese (language)', sr: 'kineski' },
     ],
+    'Restaurant': [
+      { en: 'glass', sr: 'čaša' }, { en: 'bottle', sr: 'flaša' }, { en: 'plate', sr: 'tanjir' },
+      { en: 'spoon', sr: 'kašika' }, { en: 'teaspoon', sr: 'kašičica' }, { en: 'knife', sr: 'nož' },
+      { en: 'fork', sr: 'viljuška' }, { en: 'teapot', sr: 'čajnik' }, { en: 'bill', sr: 'račun' },
+      { en: 'menu', sr: 'meni' },
+    ],
+    'Numbers (Higher)': [
+      { en: '11', sr: 'jedanaest' }, { en: '12', sr: 'dvanaest' }, { en: '13', sr: 'trinaest' },
+      { en: '14', sr: 'četrnaest' }, { en: '15', sr: 'petnaest' }, { en: '16', sr: 'šesnaest' },
+      { en: '17', sr: 'sedamnaest' }, { en: '18', sr: 'osamnaest' }, { en: '19', sr: 'devetnaest' },
+      { en: '20', sr: 'dvadeset' }, { en: '30', sr: 'trideset' }, { en: '40', sr: 'četrdeset' },
+      { en: '50', sr: 'pedeset' }, { en: '60', sr: 'šezdeset' }, { en: '70', sr: 'sedamdeset' },
+      { en: '90', sr: 'devedeset' }, { en: '100', sr: 'sto' },
+    ],
   },
 
   verbs: [
-    { inf: 'biti', en: 'to be', conj: { ja:'sam', ti:'si', 'on/ona/ono':'je', mi:'smo', 'vi/Vi':'ste', oni:'su' }},
-    { inf: 'imati', en: 'to have', conj: { ja:'imam', ti:'imaš', 'on/ona/ono':'ima', mi:'imamo', 'vi/Vi':'imate', oni:'imaju' }},
-    { inf: 'čitati', en: 'to read', conj: { ja:'čitam', ti:'čitaš', 'on/ona/ono':'čita', mi:'čitamo', 'vi/Vi':'čitate', oni:'čitaju' }},
-    { inf: 'leteti', en: 'to fly', conj: { ja:'letim', ti:'letiš', 'on/ona/ono':'leti', mi:'letimo', 'vi/Vi':'letite', oni:'lete' }},
-    { inf: 'putovati', en: 'to travel', conj: { ja:'putujem', ti:'putuješ', 'on/ona/ono':'putuje', mi:'putujemo', 'vi/Vi':'putujete', oni:'putuju' }},
-    { inf: 'raditi', en: 'to work', conj: { ja:'radim', ti:'radiš', 'on/ona/ono':'radi', mi:'radimo', 'vi/Vi':'radite', oni:'rade' }},
-    { inf: 'gledati', en: 'to watch', conj: { ja:'gledam', ti:'gledaš', 'on/ona/ono':'gleda', mi:'gledamo', 'vi/Vi':'gledate', oni:'gledaju' }},
-    { inf: 'razumeti', en: 'to understand', conj: { ja:'razumem', ti:'razumeš', 'on/ona/ono':'razume', mi:'razumemo', 'vi/Vi':'razumete', oni:'razumeju' }},
-    { inf: 'govoriti', en: 'to speak', conj: { ja:'govorim', ti:'govoriš', 'on/ona/ono':'govori', mi:'govorimo', 'vi/Vi':'govorite', oni:'govore' }},
-    { inf: 'učiti', en: 'to learn', conj: { ja:'učim', ti:'učiš', 'on/ona/ono':'uči', mi:'učimo', 'vi/Vi':'učite', oni:'uče' }},
-    { inf: 'pisati', en: 'to write', conj: { ja:'pišem', ti:'pišeš', 'on/ona/ono':'piše', mi:'pišemo', 'vi/Vi':'pišete', oni:'pišu' }},
-    { inf: 'jesti', en: 'to eat', conj: { ja:'jedem', ti:'jedeš', 'on/ona/ono':'jede', mi:'jedemo', 'vi/Vi':'jedete', oni:'jedu' }},
-    { inf: 'piti', en: 'to drink', conj: { ja:'pijem', ti:'piješ', 'on/ona/ono':'pije', mi:'pijemo', 'vi/Vi':'pijete', oni:'piju' }},
-    { inf: 'zvati se', en: 'to be named', conj: { ja:'zovem se', ti:'zoveš se', 'on/ona/ono':'zove se', mi:'zovemo se', 'vi/Vi':'zovete se', oni:'zovu se' }},
-    { inf: 'voziti', en: 'to drive', conj: { ja:'vozim', ti:'voziš', 'on/ona/ono':'vozi', mi:'vozimo', 'vi/Vi':'vozite', oni:'voze' }},
-    { inf: 'želeti', en: 'to want', conj: { ja:'želim', ti:'želiš', 'on/ona/ono':'želi', mi:'želimo', 'vi/Vi':'želite', oni:'žele' }},
-    { inf: 'ići', en: 'to go', conj: { ja:'idem', ti:'ideš', 'on/ona/ono':'ide', mi:'idemo', 'vi/Vi':'idete', oni:'idu' }},
-    { inf: 'doći', en: 'to come', conj: { ja:'dođem', ti:'dođeš', 'on/ona/ono':'dođe', mi:'dođemo', 'vi/Vi':'dođete', oni:'dođu' }},
-    { inf: 'sedeti', en: 'to sit', conj: { ja:'sedim', ti:'sediš', 'on/ona/ono':'sedi', mi:'sedimo', 'vi/Vi':'sedite', oni:'sede' }},
-    { inf: 'kuvati', en: 'to cook', conj: { ja:'kuvam', ti:'kuvaš', 'on/ona/ono':'kuva', mi:'kuvamo', 'vi/Vi':'kuvate', oni:'kuvaju' }},
-    { inf: 'probati', en: 'to try/taste', conj: { ja:'probam', ti:'probaš', 'on/ona/ono':'proba', mi:'probamo', 'vi/Vi':'probate', oni:'probaju' }},
-    { inf: 'naručiti', en: 'to order', conj: { ja:'naručim', ti:'naručiš', 'on/ona/ono':'naruči', mi:'naručimo', 'vi/Vi':'naručite', oni:'naruče' }},
-    { inf: 'platiti', en: 'to pay', conj: { ja:'platim', ti:'platiš', 'on/ona/ono':'plati', mi:'platimo', 'vi/Vi':'platite', oni:'plate' }},
-    { inf: 'voleti', en: 'to love', conj: { ja:'volim', ti:'voliš', 'on/ona/ono':'voli', mi:'volimo', 'vi/Vi':'volite', oni:'vole' }},
-    { inf: 'peći', en: 'to bake', conj: { ja:'pečem', ti:'pečeš', 'on/ona/ono':'peče', mi:'pečemo', 'vi/Vi':'pečete', oni:'peču' }},
+    { inf: 'biti', en: 'to be', tier: 1, conj: { ja:'sam', ti:'si', 'on/ona/ono':'je', mi:'smo', 'vi/Vi':'ste', oni:'su' }},
+    { inf: 'imati', en: 'to have', tier: 1, conj: { ja:'imam', ti:'imaš', 'on/ona/ono':'ima', mi:'imamo', 'vi/Vi':'imate', oni:'imaju' }},
+    { inf: 'ići', en: 'to go', tier: 1, conj: { ja:'idem', ti:'ideš', 'on/ona/ono':'ide', mi:'idemo', 'vi/Vi':'idete', oni:'idu' }},
+    { inf: 'hteti', en: 'to want (will)', tier: 1, conj: { ja:'hoću', ti:'hoćeš', 'on/ona/ono':'hoće', mi:'hoćemo', 'vi/Vi':'hoćete', oni:'hoće' }},
+    { inf: 'želeti', en: 'to want/wish', tier: 1, conj: { ja:'želim', ti:'želiš', 'on/ona/ono':'želi', mi:'želimo', 'vi/Vi':'želite', oni:'žele' }},
+    { inf: 'govoriti', en: 'to speak', tier: 1, conj: { ja:'govorim', ti:'govoriš', 'on/ona/ono':'govori', mi:'govorimo', 'vi/Vi':'govorite', oni:'govore' }},
+    { inf: 'zvati se', en: 'to be named', tier: 1, conj: { ja:'zovem se', ti:'zoveš se', 'on/ona/ono':'zove se', mi:'zovemo se', 'vi/Vi':'zovete se', oni:'zovu se' }},
+    { inf: 'jesti', en: 'to eat', tier: 2, conj: { ja:'jedem', ti:'jedeš', 'on/ona/ono':'jede', mi:'jedemo', 'vi/Vi':'jedete', oni:'jedu' }},
+    { inf: 'piti', en: 'to drink', tier: 2, conj: { ja:'pijem', ti:'piješ', 'on/ona/ono':'pije', mi:'pijemo', 'vi/Vi':'pijete', oni:'piju' }},
+    { inf: 'raditi', en: 'to work', tier: 2, conj: { ja:'radim', ti:'radiš', 'on/ona/ono':'radi', mi:'radimo', 'vi/Vi':'radite', oni:'rade' }},
+    { inf: 'učiti', en: 'to learn', tier: 2, conj: { ja:'učim', ti:'učiš', 'on/ona/ono':'uči', mi:'učimo', 'vi/Vi':'učite', oni:'uče' }},
+    { inf: 'čitati', en: 'to read', tier: 2, conj: { ja:'čitam', ti:'čitaš', 'on/ona/ono':'čita', mi:'čitamo', 'vi/Vi':'čitate', oni:'čitaju' }},
+    { inf: 'gledati', en: 'to watch', tier: 2, conj: { ja:'gledam', ti:'gledaš', 'on/ona/ono':'gleda', mi:'gledamo', 'vi/Vi':'gledate', oni:'gledaju' }},
+    { inf: 'kuvati', en: 'to cook', tier: 2, conj: { ja:'kuvam', ti:'kuvaš', 'on/ona/ono':'kuva', mi:'kuvamo', 'vi/Vi':'kuvate', oni:'kuvaju' }},
+    { inf: 'pisati', en: 'to write', tier: 3, conj: { ja:'pišem', ti:'pišeš', 'on/ona/ono':'piše', mi:'pišemo', 'vi/Vi':'pišete', oni:'pišu' }},
+    { inf: 'voziti', en: 'to drive', tier: 3, conj: { ja:'vozim', ti:'voziš', 'on/ona/ono':'vozi', mi:'vozimo', 'vi/Vi':'vozite', oni:'voze' }},
+    { inf: 'voleti', en: 'to love', tier: 3, conj: { ja:'volim', ti:'voliš', 'on/ona/ono':'voli', mi:'volimo', 'vi/Vi':'volite', oni:'vole' }},
+    { inf: 'sedeti', en: 'to sit', tier: 3, conj: { ja:'sedim', ti:'sediš', 'on/ona/ono':'sedi', mi:'sedimo', 'vi/Vi':'sedite', oni:'sede' }},
+    { inf: 'razumeti', en: 'to understand', tier: 3, conj: { ja:'razumem', ti:'razumeš', 'on/ona/ono':'razume', mi:'razumemo', 'vi/Vi':'razumete', oni:'razumeju' }},
+    { inf: 'leteti', en: 'to fly', tier: 4, conj: { ja:'letim', ti:'letiš', 'on/ona/ono':'leti', mi:'letimo', 'vi/Vi':'letite', oni:'lete' }},
+    { inf: 'putovati', en: 'to travel', tier: 4, conj: { ja:'putujem', ti:'putuješ', 'on/ona/ono':'putuje', mi:'putujemo', 'vi/Vi':'putujete', oni:'putuju' }},
+    { inf: 'doći', en: 'to come', tier: 4, conj: { ja:'dođem', ti:'dođeš', 'on/ona/ono':'dođe', mi:'dođemo', 'vi/Vi':'dođete', oni:'dođu' }},
+    { inf: 'probati', en: 'to try/taste', tier: 4, conj: { ja:'probam', ti:'probaš', 'on/ona/ono':'proba', mi:'probamo', 'vi/Vi':'probate', oni:'probaju' }},
+    { inf: 'naručiti', en: 'to order', tier: 4, conj: { ja:'naručim', ti:'naručiš', 'on/ona/ono':'naruči', mi:'naručimo', 'vi/Vi':'naručite', oni:'naruče' }},
+    { inf: 'platiti', en: 'to pay', tier: 4, conj: { ja:'platim', ti:'platiš', 'on/ona/ono':'plati', mi:'platimo', 'vi/Vi':'platite', oni:'plate' }},
+    { inf: 'peći', en: 'to bake', tier: 4, conj: { ja:'pečem', ti:'pečeš', 'on/ona/ono':'peče', mi:'pečemo', 'vi/Vi':'pečete', oni:'peču' }},
   ],
 
   cases: {
     accusative: {
-      name: 'Accusative',
-      usage: 'Direct object (what/whom)',
+      name: 'Accusative', usage: 'Direct object (what/whom)',
       exercises: [
         { prompt: 'kafa (feminine) → accusative', answer: 'kafu', hint: '"a" → "u" for feminine' },
         { prompt: 'jabuka (feminine) → accusative', answer: 'jabuku', hint: '"a" → "u" for feminine' },
@@ -825,8 +571,7 @@ const DATA = {
       ]
     },
     locative: {
-      name: 'Locative',
-      usage: 'Location (where, in what)',
+      name: 'Locative', usage: 'Location (where, in what)',
       exercises: [
         { prompt: 'aerodrom (masc.) → na ___', answer: 'aerodromu', hint: 'Add "u" for masculine' },
         { prompt: 'centar (masc.) → u ___', answer: 'centru', hint: 'Add "u" for masculine' },
@@ -841,8 +586,7 @@ const DATA = {
       ]
     },
     genitive: {
-      name: 'Genitive',
-      usage: 'Possession / "of"',
+      name: 'Genitive', usage: 'Possession / "of"',
       exercises: [
         { prompt: 'knjiga (fem.) → genitive', answer: 'knjige', hint: '"a" → "e" for feminine' },
         { prompt: 'kompjuter (masc.) → genitive', answer: 'kompjutera', hint: 'Add "a" for masculine' },
@@ -855,48 +599,203 @@ const DATA = {
       ]
     },
     instrumental: {
-      name: 'Instrumental',
-      usage: 'With whom / with what',
+      name: 'Instrumental', usage: 'With whom / with what',
       exercises: [
         { prompt: 'brat → sa ___', answer: 'bratom', hint: 'Add "om" for masculine' },
         { prompt: 'sestra → sa ___', answer: 'sestrom', hint: 'Add "om" for feminine' },
         { prompt: 'prijatelj → sa ___', answer: 'prijateljem', hint: 'Exception: use "em"' },
         { prompt: 'muž → sa ___', answer: 'mužem', hint: 'Exception: use "em"' },
-        { prompt: 'olovka → write with ___ (no preposition)', answer: 'olovkom', hint: '"a" → "om" for feminine tools' },
-        { prompt: 'viljuška → eat with ___ (no preposition)', answer: 'viljuškom', hint: '"a" → "om" for feminine tools' },
-        { prompt: 'nož → cut with ___ (no preposition)', answer: 'nožem', hint: 'Exception: use "em"' },
+        { prompt: 'olovka → write with ___', answer: 'olovkom', hint: '"a" → "om" for feminine tools' },
+        { prompt: 'viljuška → eat with ___', answer: 'viljuškom', hint: '"a" → "om" for feminine tools' },
+        { prompt: 'nož → cut with ___', answer: 'nožem', hint: 'Exception: use "em"' },
         { prompt: 'dete → sa ___', answer: 'detetom', hint: 'Add "om" for neuter' },
       ]
     },
   },
 
   sentenceExercises: [
-    { english: 'I drink coffee', sentence: 'Ja ___ kafu', blank: 'pijem' },
-    { english: 'I eat a lemon', sentence: 'Ja ___ limun', blank: 'jedem' },
-    { english: 'Do you speak Serbian?', sentence: '___ li srpski?', blank: 'Govoriš' },
-    { english: 'I live in Switzerland', sentence: 'Živim u ___', blank: 'Švajcarskoj' },
-    { english: "My name is Kaito (I'm called Kaito)", sentence: '___ se Kaito', blank: 'Zovem' },
-    { english: 'Can I get...?', sentence: 'Mogu li da ___...?', blank: 'dobijem' },
-    { english: 'Everything was very delicious', sentence: 'Sve je bilo vrlo ___', blank: 'ukusno' },
-    { english: 'I would like Turkish coffee', sentence: 'Ja ___ tursku kafu', blank: 'bih' },
-    { english: "What's new?", sentence: 'Šta ima ___?', blank: 'novo' },
-    { english: "It's good, but it's better in Japan", sentence: 'Dobro je, ali je u Japanu ___', blank: 'bolje' },
-    { english: 'With card, please', sentence: '___, molim', blank: 'Karticom' },
-    { english: 'The food was very good', sentence: 'Hrana je bila veoma ___', blank: 'dobra' },
-    { english: 'I learn Serbian', sentence: 'Ja ___ srpski', blank: 'učim' },
-    { english: 'We go to Belgrade', sentence: 'Mi ___ u Beograd', blank: 'idemo' },
-    { english: 'She speaks German', sentence: 'Ona ___ nemački', blank: 'govori' },
-    { english: 'They read a book', sentence: 'Oni ___ knjigu', blank: 'čitaju' },
-    { english: 'I write with a pencil', sentence: 'Pišem ___', blank: 'olovkom' },
-    { english: 'I walk with my brother', sentence: 'Šetam sa ___', blank: 'bratom' },
-    { english: 'Nice to meet you', sentence: '___ mi je', blank: 'Drago' },
-    { english: 'I was in Serbia', sentence: 'Ja sam ___ u Srbiji', blank: 'bio' },
-    { english: 'Nothing else', sentence: 'Ništa ___', blank: 'više' },
-    { english: 'Something else?', sentence: 'Još ___?', blank: 'nešto' },
-    { english: 'I am not (male)', sentence: '___ sam', blank: 'Nisam' },
-    { english: 'How is it in Switzerland?', sentence: 'Kako je u ___?', blank: 'Švajcarskoj' },
+    { english: 'I drink coffee', sentence: 'Ja ___ kafu', blank: 'pijem', tier: 2 },
+    { english: 'I eat a lemon', sentence: 'Ja ___ limun', blank: 'jedem', tier: 2 },
+    { english: 'Do you speak Serbian?', sentence: '___ li srpski?', blank: 'Govoriš', tier: 1 },
+    { english: "My name is Kaito", sentence: '___ se Kaito', blank: 'Zovem', tier: 1 },
+    { english: 'Nice to meet you', sentence: '___ mi je', blank: 'Drago', tier: 1 },
+    { english: 'I am not (male)', sentence: '___ sam', blank: 'Nisam', tier: 1 },
+    { english: 'I learn Serbian', sentence: 'Ja ___ srpski', blank: 'učim', tier: 2 },
+    { english: 'We go to Belgrade', sentence: 'Mi ___ u Beograd', blank: 'idemo', tier: 2 },
+    { english: 'She speaks German', sentence: 'Ona ___ nemački', blank: 'govori', tier: 2 },
+    { english: 'They read a book', sentence: 'Oni ___ knjigu', blank: 'čitaju', tier: 2 },
+    { english: 'I live in Switzerland', sentence: 'Živim u ___', blank: 'Švajcarskoj', tier: 3 },
+    { english: 'Can I get...?', sentence: 'Mogu li da ___...?', blank: 'dobijem', tier: 2 },
+    { english: 'Everything was very delicious', sentence: 'Sve je bilo vrlo ___', blank: 'ukusno', tier: 2 },
+    { english: 'I would like Turkish coffee', sentence: 'Ja ___ tursku kafu', blank: 'bih', tier: 2 },
+    { english: "What's new?", sentence: 'Šta ima ___?', blank: 'novo', tier: 1 },
+    { english: "It's good, but better in Japan", sentence: 'Dobro je, ali je u Japanu ___', blank: 'bolje', tier: 3 },
+    { english: 'With card, please', sentence: '___, molim', blank: 'Karticom', tier: 3 },
+    { english: 'The food was very good', sentence: 'Hrana je bila veoma ___', blank: 'dobra', tier: 2 },
+    { english: 'I write with a pencil', sentence: 'Pišem ___', blank: 'olovkom', tier: 3 },
+    { english: 'I walk with my brother', sentence: 'Šetam sa ___', blank: 'bratom', tier: 3 },
+    { english: 'I was in Serbia', sentence: 'Ja sam ___ u Srbiji', blank: 'bio', tier: 3 },
+    { english: 'Nothing else', sentence: 'Ništa ___', blank: 'više', tier: 1 },
+    { english: 'Something else?', sentence: 'Još ___?', blank: 'nešto', tier: 1 },
+    { english: 'How is it in Switzerland?', sentence: 'Kako je u ___?', blank: 'Švajcarskoj', tier: 3 },
   ],
 };
+
+// TIER ASSIGNMENTS
+const CATEGORY_TIERS = {
+  'Pronouns & Basics': 1, 'Question Words': 1, 'Polite Words': 1, 'Numbers (Basic)': 1,
+  'Food & Fruits': 2, 'Beverages': 2, 'Places': 2, 'Days & Time': 2, 'Directions': 2,
+  'Family': 3, 'Colors': 3, 'Objects': 3, 'Adjectives': 3, 'Weather': 3,
+  'Body Parts': 4, 'Countries & Languages': 4, 'Restaurant': 4, 'Numbers (Higher)': 4,
+};
+
+const TIER_NAMES = { 1: 'Core', 2: 'Daily Life', 3: 'Expansion', 4: 'Advanced' };
+const PRONOUNS = ['ja', 'ti', 'on/ona/ono', 'mi', 'vi/Vi', 'oni'];
+
+// =============================================
+// SRS ENGINE
+// =============================================
+const SRS_KEY = 'serbian-srs';
+const INTERVALS = [0, 1, 3, 7, 21, 60];
+const NEW_CARDS_PER_DAY = 15;
+
+let srsData = loadSRS();
+
+function loadSRS() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SRS_KEY));
+    if (d && d.cards) return d;
+  } catch {}
+  return { cards: {}, streak: { count: 0, lastDate: null }, daily: { date: '', newCards: 0 } };
+}
+
+function saveSRS() { localStorage.setItem(SRS_KEY, JSON.stringify(srsData)); }
+
+function getCard(id) {
+  if (!srsData.cards[id]) srsData.cards[id] = { box: 0, nextReview: 0 };
+  return srsData.cards[id];
+}
+
+function isNew(id) { return !srsData.cards[id] || srsData.cards[id].box === 0; }
+
+function isDue(id) {
+  const c = srsData.cards[id];
+  return c && c.box > 0 && Date.now() >= c.nextReview;
+}
+
+function getToday() { return new Date().toISOString().slice(0, 10); }
+
+function canIntroduceNew() {
+  const today = getToday();
+  if (!srsData.daily || srsData.daily.date !== today) {
+    srsData.daily = { date: today, newCards: 0 };
+  }
+  return srsData.daily.newCards < NEW_CARDS_PER_DAY;
+}
+
+function recordAnswer(id, quality) {
+  // quality: 0=again, 1=hard, 2=good, 3=easy
+  const card = getCard(id);
+  const wasNew = card.box === 0;
+  if (quality === 0) {
+    card.box = 1;
+    card.nextReview = Date.now();
+  } else if (quality === 1) {
+    if (card.box === 0) card.box = 1;
+    card.nextReview = Date.now() + (INTERVALS[Math.max(card.box - 1, 0)] || 1) * 86400000;
+  } else {
+    const inc = quality === 3 ? 2 : 1;
+    card.box = Math.min((card.box || 0) + inc, 5);
+    card.nextReview = Date.now() + (INTERVALS[card.box - 1] || 60) * 86400000;
+  }
+  if (wasNew && card.box > 0) {
+    const today = getToday();
+    if (!srsData.daily || srsData.daily.date !== today) srsData.daily = { date: today, newCards: 0 };
+    srsData.daily.newCards++;
+  }
+  saveSRS();
+}
+
+function updateStreak() {
+  const today = getToday();
+  if (!srsData.streak) srsData.streak = { count: 0, lastDate: null };
+  if (srsData.streak.lastDate === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  srsData.streak.count = srsData.streak.lastDate === yesterday ? srsData.streak.count + 1 : 1;
+  srsData.streak.lastDate = today;
+  saveSRS();
+}
+
+// =============================================
+// TIER SYSTEM
+// =============================================
+function getVocabIdsForTier(tier) {
+  const ids = [];
+  Object.entries(CATEGORY_TIERS).forEach(([cat, t]) => {
+    if (t === tier && DATA.vocabulary[cat]) {
+      DATA.vocabulary[cat].forEach(w => ids.push('v:' + cat + ':' + w.en));
+    }
+  });
+  return ids;
+}
+
+function isTierUnlocked(tier) {
+  if (tier <= 1) return true;
+  const prevIds = getVocabIdsForTier(tier - 1);
+  if (prevIds.length === 0) return true;
+  const inBox2Plus = prevIds.filter(id => {
+    const c = srsData.cards[id];
+    return c && c.box >= 2;
+  }).length;
+  return inBox2Plus >= prevIds.length * 0.8;
+}
+
+function getCategoryTier(cat) { return CATEGORY_TIERS[cat] || 4; }
+
+// =============================================
+// CARD REGISTRY
+// =============================================
+function getAllCardEntries() {
+  const entries = [];
+  // Vocab cards
+  Object.entries(DATA.vocabulary).forEach(([cat, words]) => {
+    const tier = CATEGORY_TIERS[cat] || 4;
+    words.forEach(w => {
+      entries.push({ id: 'v:' + cat + ':' + w.en, type: 'vocab', tier, data: { cat, ...w } });
+    });
+  });
+  // Conjugation cards
+  DATA.verbs.forEach(v => {
+    PRONOUNS.forEach(p => {
+      entries.push({ id: 'c:' + v.inf + ':' + p, type: 'conj', tier: v.tier, data: { verb: v, pronoun: p, answer: v.conj[p] } });
+    });
+  });
+  // Case cards
+  Object.entries(DATA.cases).forEach(([caseType, caseData]) => {
+    caseData.exercises.forEach((ex, i) => {
+      entries.push({ id: 'k:' + caseType + ':' + i, type: 'case', tier: 2, data: { caseType, caseName: caseData.name, usage: caseData.usage, ...ex } });
+    });
+  });
+  // Sentence cards
+  DATA.sentenceExercises.forEach((ex, i) => {
+    entries.push({ id: 's:' + i, type: 'sentence', tier: ex.tier || 2, data: ex });
+  });
+  return entries;
+}
+
+const ALL_CARDS = getAllCardEntries();
+
+function getUnlockedCards() {
+  return ALL_CARDS.filter(c => isTierUnlocked(c.tier));
+}
+
+function getDueCards() {
+  return getUnlockedCards().filter(c => isDue(c.id));
+}
+
+function getNewCards() {
+  return getUnlockedCards().filter(c => isNew(c.id));
+}
 
 // =============================================
 // UTILITIES
@@ -910,25 +809,283 @@ function shuffle(arr) {
   return a;
 }
 
+function normalize(str) { return str.trim().toLowerCase().replace(/[?!.,]/g, ''); }
+
 function pick(arr, n, exclude) {
-  const filtered = exclude ? arr.filter(x => x !== exclude) : [...arr];
-  return shuffle(filtered).slice(0, n);
+  return shuffle(exclude ? arr.filter(x => x !== exclude) : [...arr]).slice(0, n);
 }
 
-function normalize(str) {
-  return str.trim().toLowerCase();
+// =============================================
+// SERBIAN CHAR HELPER
+// =============================================
+let activeInput = null;
+document.addEventListener('focusin', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'text') activeInput = e.target;
+});
+
+function insertChar(ch) {
+  if (!activeInput) return;
+  const s = activeInput.selectionStart, e = activeInput.selectionEnd;
+  const v = activeInput.value;
+  activeInput.value = v.slice(0, s) + ch + v.slice(e);
+  activeInput.selectionStart = activeInput.selectionEnd = s + ch.length;
+  activeInput.focus();
 }
 
 // =============================================
 // NAVIGATION
 // =============================================
+function switchTab(section) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.section === section));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === section));
+  if (section === 'dashboard') renderDashboard();
+  if (section === 'review') startReview();
+}
+
 document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.section).classList.add('active');
-  });
+  tab.addEventListener('click', () => switchTab(tab.dataset.section));
+});
+
+// =============================================
+// DASHBOARD
+// =============================================
+function renderDashboard() {
+  const due = getDueCards().length;
+  const newAvail = Math.min(getNewCards().length, NEW_CARDS_PER_DAY - (srsData.daily && srsData.daily.date === getToday() ? srsData.daily.newCards : 0));
+  document.getElementById('dash-streak').textContent = srsData.streak ? srsData.streak.count : 0;
+  document.getElementById('dash-due').textContent = due;
+  document.getElementById('dash-new').textContent = Math.max(0, newAvail);
+  const btn = document.getElementById('dash-start-btn');
+  const total = due + Math.max(0, newAvail);
+  btn.textContent = total > 0 ? `Start Review (${total} cards)` : 'All caught up!';
+  btn.disabled = total === 0;
+
+  // Tier progress
+  const tiersEl = document.getElementById('dash-tiers');
+  tiersEl.innerHTML = '';
+  for (let t = 1; t <= 4; t++) {
+    const ids = getVocabIdsForTier(t);
+    const mastered = ids.filter(id => { const c = srsData.cards[id]; return c && c.box >= 3; }).length;
+    const pct = ids.length ? Math.round(mastered / ids.length * 100) : 0;
+    const unlocked = isTierUnlocked(t);
+    const cats = Object.entries(CATEGORY_TIERS).filter(([, v]) => v === t).map(([k]) => k).join(', ');
+    const div = document.createElement('div');
+    div.className = 'dash-tier' + (unlocked ? '' : ' dash-tier-locked');
+    div.innerHTML = `
+      <div class="dash-tier-header">
+        <div class="dash-tier-name">Tier ${t}: ${TIER_NAMES[t]}</div>
+        <div class="dash-tier-pct">${unlocked ? pct + '% mastered' : ''}</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${unlocked ? pct : 0}%"></div></div>
+      <div class="dash-tier-cats">${cats}</div>`;
+    tiersEl.appendChild(div);
+  }
+}
+
+function launchReview() {
+  switchTab('review');
+}
+
+// =============================================
+// REVIEW MODE
+// =============================================
+let reviewQueue = [];
+let reviewIndex = 0;
+let reviewCorrectCount = 0;
+let reviewAnswered = false;
+
+function startReview() {
+  const due = shuffle(getDueCards());
+  const newLimit = Math.max(0, NEW_CARDS_PER_DAY - (srsData.daily && srsData.daily.date === getToday() ? srsData.daily.newCards : 0));
+  const newCards = shuffle(getNewCards()).slice(0, newLimit);
+  const combined = [...due, ...newCards];
+
+  // Interleave by type
+  const byType = { vocab: [], conj: [], case: [], sentence: [] };
+  combined.forEach(c => (byType[c.type] || byType.vocab).push(c));
+  reviewQueue = [];
+  const types = ['vocab', 'conj', 'case', 'sentence'];
+  let idx = 0, safety = combined.length + types.length;
+  while (reviewQueue.length < combined.length && safety-- > 0) {
+    const t = types[idx % types.length];
+    if (byType[t].length) reviewQueue.push(byType[t].shift());
+    idx++;
+  }
+
+  reviewIndex = 0;
+  reviewCorrectCount = 0;
+  reviewAnswered = false;
+  document.getElementById('review-complete').style.display = 'none';
+  document.getElementById('review-content').style.display = 'block';
+  if (reviewQueue.length === 0) {
+    document.getElementById('review-content').style.display = 'none';
+    document.getElementById('review-complete').style.display = 'block';
+    document.getElementById('review-summary').textContent = 'No cards to review right now. Come back later!';
+    return;
+  }
+  showReviewCard();
+}
+
+function showReviewCard() {
+  if (reviewIndex >= reviewQueue.length) {
+    finishReview();
+    return;
+  }
+  reviewAnswered = false;
+  const entry = reviewQueue[reviewIndex];
+  const badge = document.getElementById('review-badge');
+  const prompt = document.getElementById('review-prompt');
+  const context = document.getElementById('review-context');
+  const inputArea = document.getElementById('review-input-area');
+  const mcArea = document.getElementById('review-mc-area');
+  const input = document.getElementById('review-input');
+  const feedback = document.getElementById('review-feedback');
+  const rating = document.getElementById('review-rating');
+
+  feedback.textContent = '';
+  rating.style.display = 'none';
+  document.getElementById('review-check-btn').style.display = '';
+  document.getElementById('review-progress').textContent = `${reviewIndex + 1} / ${reviewQueue.length}`;
+
+  const useMultipleChoice = isNew(entry.id) && entry.type === 'vocab';
+
+  if (entry.type === 'vocab') {
+    badge.className = 'review-type-badge review-type-vocab';
+    badge.textContent = 'VOCAB';
+    const dir = Math.random() > 0.5 ? 'en-sr' : 'sr-en';
+    entry._dir = dir;
+    if (dir === 'en-sr') {
+      prompt.textContent = entry.data.en;
+      context.textContent = 'Translate to Serbian';
+      entry._answer = entry.data.sr;
+    } else {
+      prompt.textContent = entry.data.sr;
+      context.textContent = 'Translate to English';
+      entry._answer = entry.data.en;
+    }
+    if (useMultipleChoice) {
+      inputArea.style.display = 'none';
+      mcArea.style.display = '';
+      const allVocab = Object.values(DATA.vocabulary).flat();
+      const wrongChoices = pick(allVocab, 3, entry.data);
+      const options = shuffle([entry.data, ...wrongChoices]);
+      const optionsEl = document.getElementById('review-options');
+      optionsEl.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'review-option';
+        btn.textContent = dir === 'en-sr' ? opt.sr : opt.en;
+        btn.onclick = () => handleReviewMC(btn, opt === entry.data, entry._answer);
+        optionsEl.appendChild(btn);
+      });
+    } else {
+      inputArea.style.display = '';
+      mcArea.style.display = 'none';
+      input.value = '';
+      input.placeholder = dir === 'en-sr' ? 'Type in Serbian...' : 'Type in English...';
+      input.focus();
+    }
+  } else if (entry.type === 'conj') {
+    badge.className = 'review-type-badge review-type-conj';
+    badge.textContent = 'VERB';
+    prompt.textContent = `${entry.data.verb.inf} (${entry.data.verb.en})`;
+    context.textContent = `Conjugate for: ${entry.data.pronoun}`;
+    entry._answer = entry.data.answer;
+    inputArea.style.display = '';
+    mcArea.style.display = 'none';
+    input.value = '';
+    input.placeholder = 'Type conjugation...';
+    input.focus();
+  } else if (entry.type === 'case') {
+    badge.className = 'review-type-badge review-type-case';
+    badge.textContent = entry.data.caseName.toUpperCase();
+    prompt.innerHTML = entry.data.prompt;
+    context.textContent = entry.data.hint;
+    entry._answer = entry.data.answer;
+    inputArea.style.display = '';
+    mcArea.style.display = 'none';
+    input.value = '';
+    input.placeholder = 'Type answer...';
+    input.focus();
+  } else if (entry.type === 'sentence') {
+    badge.className = 'review-type-badge review-type-sentence';
+    badge.textContent = 'SENTENCE';
+    const parts = entry.data.sentence.split('___');
+    prompt.innerHTML = parts[0] + '<span class="sb-blank">&nbsp;</span>' + (parts[1] || '');
+    context.textContent = entry.data.english;
+    entry._answer = entry.data.blank;
+    inputArea.style.display = '';
+    mcArea.style.display = 'none';
+    input.value = '';
+    input.placeholder = 'Fill in the blank...';
+    input.focus();
+  }
+}
+
+function reviewCheck() {
+  if (reviewAnswered) return;
+  const entry = reviewQueue[reviewIndex];
+  const input = document.getElementById('review-input');
+  const feedback = document.getElementById('review-feedback');
+  const userAnswer = normalize(input.value);
+  const correct = normalize(entry._answer);
+
+  reviewAnswered = true;
+  document.getElementById('review-check-btn').style.display = 'none';
+
+  if (userAnswer === correct) {
+    input.classList.add('correct');
+    feedback.innerHTML = '<span class="text-success">Correct!</span>';
+    reviewCorrectCount++;
+  } else {
+    input.classList.add('wrong');
+    feedback.innerHTML = `<span class="text-error">Answer: ${entry._answer}</span>`;
+  }
+  document.getElementById('review-rating').style.display = 'flex';
+}
+
+function handleReviewMC(btn, isCorrect, correctAnswer) {
+  if (reviewAnswered) return;
+  reviewAnswered = true;
+  const feedback = document.getElementById('review-feedback');
+  document.querySelectorAll('.review-option').forEach(b => b.classList.add('disabled'));
+  if (isCorrect) {
+    btn.classList.add('correct');
+    feedback.innerHTML = '<span class="text-success">Correct!</span>';
+    reviewCorrectCount++;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.review-option').forEach(b => {
+      if (b.textContent === correctAnswer) b.classList.add('correct');
+    });
+    feedback.innerHTML = `<span class="text-error">Answer: ${correctAnswer}</span>`;
+  }
+  document.getElementById('review-rating').style.display = 'flex';
+}
+
+function reviewRate(quality) {
+  const entry = reviewQueue[reviewIndex];
+  recordAnswer(entry.id, quality);
+  updateStreak();
+  // If "Again", re-add to queue
+  if (quality === 0) {
+    reviewQueue.push(entry);
+  }
+  reviewIndex++;
+  const input = document.getElementById('review-input');
+  input.classList.remove('correct', 'wrong');
+  showReviewCard();
+}
+
+function finishReview() {
+  document.getElementById('review-content').style.display = 'none';
+  document.getElementById('review-complete').style.display = 'block';
+  document.getElementById('review-summary').textContent =
+    `You reviewed ${reviewIndex} cards. ${reviewCorrectCount} correct (${reviewIndex ? Math.round(reviewCorrectCount / reviewIndex * 100) : 0}%).`;
+}
+
+document.getElementById('review-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') reviewCheck();
 });
 
 // =============================================
@@ -938,27 +1095,39 @@ let fcCategory = Object.keys(DATA.vocabulary)[0];
 let fcCards = [];
 let fcIndex = 0;
 let fcDir = 'en-sr';
+let fcTypeMode = false;
 
 function initFlashcards() {
   const bar = document.getElementById('fc-categories');
   bar.innerHTML = '';
   Object.keys(DATA.vocabulary).forEach(cat => {
+    const tier = getCategoryTier(cat);
+    const unlocked = isTierUnlocked(tier);
     const btn = document.createElement('button');
-    btn.className = 'cat-btn' + (cat === fcCategory ? ' active' : '');
+    btn.className = 'cat-btn' + (cat === fcCategory ? ' active' : '') + (unlocked ? '' : ' locked');
     btn.textContent = cat;
-    btn.onclick = () => {
-      fcCategory = cat;
-      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      loadFcCards();
-    };
+    if (unlocked) {
+      btn.onclick = () => {
+        fcCategory = cat;
+        bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadFcCards();
+      };
+    }
     bar.appendChild(btn);
   });
   loadFcCards();
 }
 
 function loadFcCards() {
-  fcCards = [...DATA.vocabulary[fcCategory]];
+  const catWords = DATA.vocabulary[fcCategory] || [];
+  // Sort: due first, then new, then mastered
+  fcCards = [...catWords].sort((a, b) => {
+    const idA = 'v:' + fcCategory + ':' + a.en, idB = 'v:' + fcCategory + ':' + b.en;
+    const dueA = isDue(idA) ? 0 : isNew(idA) ? 1 : 2;
+    const dueB = isDue(idB) ? 0 : isNew(idB) ? 1 : 2;
+    return dueA - dueB;
+  });
   fcIndex = 0;
   showFcCard();
 }
@@ -966,46 +1135,81 @@ function loadFcCards() {
 function showFcCard() {
   if (!fcCards.length) return;
   const card = fcCards[fcIndex];
-  const el = document.getElementById('flashcard');
-  el.classList.remove('flipped');
+  const cardId = 'v:' + fcCategory + ':' + card.en;
 
-  const frontLabel = document.getElementById('fc-front-label');
-  const frontWord = document.getElementById('fc-front-word');
-  const backLabel = document.getElementById('fc-back-label');
-  const backWord = document.getElementById('fc-back-word');
-
-  if (fcDir === 'en-sr') {
-    frontLabel.textContent = 'English';
-    frontWord.textContent = card.en;
-    backLabel.textContent = 'Serbian';
-    backWord.textContent = card.sr;
+  if (fcTypeMode) {
+    document.getElementById('fc-flip-mode').style.display = 'none';
+    document.getElementById('fc-type-mode').style.display = '';
+    const label = document.getElementById('fc-type-label');
+    const prompt = document.getElementById('fc-type-prompt');
+    label.textContent = fcDir === 'en-sr' ? 'Translate to Serbian' : 'Translate to English';
+    prompt.textContent = fcDir === 'en-sr' ? card.en : card.sr;
+    document.getElementById('fc-type-input').value = '';
+    document.getElementById('fc-type-input').classList.remove('correct', 'wrong');
+    document.getElementById('fc-type-feedback').textContent = '';
+    document.getElementById('fc-type-srs').style.display = 'none';
+    document.getElementById('fc-type-input').focus();
   } else {
-    frontLabel.textContent = 'Serbian';
-    frontWord.textContent = card.sr;
-    backLabel.textContent = 'English';
-    backWord.textContent = card.en;
+    document.getElementById('fc-flip-mode').style.display = '';
+    document.getElementById('fc-type-mode').style.display = 'none';
+    const el = document.getElementById('flashcard');
+    el.classList.remove('flipped');
+    document.getElementById('fc-srs-btns').style.display = 'none';
+    if (fcDir === 'en-sr') {
+      document.getElementById('fc-front-label').textContent = 'English';
+      document.getElementById('fc-front-word').textContent = card.en;
+      document.getElementById('fc-back-label').textContent = 'Serbian';
+      document.getElementById('fc-back-word').textContent = card.sr;
+    } else {
+      document.getElementById('fc-front-label').textContent = 'Serbian';
+      document.getElementById('fc-front-word').textContent = card.sr;
+      document.getElementById('fc-back-label').textContent = 'English';
+      document.getElementById('fc-back-word').textContent = card.en;
+    }
   }
-
   document.getElementById('fc-counter').textContent = `${fcIndex + 1} / ${fcCards.length}`;
 }
 
 function flipCard() {
-  document.getElementById('flashcard').classList.toggle('flipped');
+  const el = document.getElementById('flashcard');
+  el.classList.toggle('flipped');
+  if (el.classList.contains('flipped')) {
+    document.getElementById('fc-srs-btns').style.display = 'flex';
+  }
+}
+
+function fcTypeCheck() {
+  const card = fcCards[fcIndex];
+  const input = document.getElementById('fc-type-input');
+  const fb = document.getElementById('fc-type-feedback');
+  const answer = fcDir === 'en-sr' ? card.sr : card.en;
+  const correct = normalize(input.value) === normalize(answer);
+  input.classList.add(correct ? 'correct' : 'wrong');
+  fb.innerHTML = correct
+    ? '<span class="text-success">Correct!</span>'
+    : `<span class="text-error">Answer: ${answer}</span>`;
+  document.getElementById('fc-type-srs').style.display = 'flex';
+}
+
+function fcRate(known) {
+  const card = fcCards[fcIndex];
+  const id = 'v:' + fcCategory + ':' + card.en;
+  recordAnswer(id, known ? 2 : 0);
+  updateStreak();
+  fcNext();
 }
 
 function fcNext() {
   fcIndex = (fcIndex + 1) % fcCards.length;
   showFcCard();
 }
-
 function fcPrev() {
   fcIndex = (fcIndex - 1 + fcCards.length) % fcCards.length;
   showFcCard();
 }
 
-function fcShuffle() {
-  fcCards = shuffle(fcCards);
-  fcIndex = 0;
+function toggleTypeMode() {
+  fcTypeMode = document.getElementById('fc-type-toggle').checked;
   showFcCard();
 }
 
@@ -1018,121 +1222,25 @@ document.querySelectorAll('.dir-btn').forEach(btn => {
   });
 });
 
-// =============================================
-// QUIZ
-// =============================================
-let quizCategory = Object.keys(DATA.vocabulary)[0];
-let quizPool = [];
-let quizCorrect = 0;
-let quizTotal = 0;
-let quizAnswered = false;
-
-function initQuiz() {
-  const bar = document.getElementById('quiz-categories');
-  bar.innerHTML = '';
-  const cats = ['All', ...Object.keys(DATA.vocabulary)];
-  cats.forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-btn' + (cat === quizCategory ? ' active' : '');
-    btn.textContent = cat;
-    btn.onclick = () => {
-      quizCategory = cat;
-      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      quizCorrect = 0;
-      quizTotal = 0;
-      loadQuiz();
-    };
-    bar.appendChild(btn);
-  });
-  quizCategory = 'All';
-  bar.querySelector('.cat-btn').classList.add('active');
-  loadQuiz();
-}
-
-function getQuizPool() {
-  if (quizCategory === 'All') {
-    return Object.values(DATA.vocabulary).flat();
-  }
-  return DATA.vocabulary[quizCategory];
-}
-
-function loadQuiz() {
-  quizAnswered = false;
-  document.getElementById('quiz-next').style.display = 'none';
-  const pool = getQuizPool();
-  if (pool.length < 4) return;
-
-  const correct = pool[Math.floor(Math.random() * pool.length)];
-  const direction = Math.random() > 0.5 ? 'en-sr' : 'sr-en';
-
-  const promptEl = document.getElementById('quiz-prompt');
-  const labelEl = document.getElementById('quiz-label');
-  const contextEl = document.getElementById('quiz-context');
-
-  if (direction === 'en-sr') {
-    labelEl.textContent = 'Translate to Serbian';
-    promptEl.textContent = correct.en;
-    contextEl.textContent = '';
-  } else {
-    labelEl.textContent = 'Translate to English';
-    promptEl.textContent = correct.sr;
-    contextEl.textContent = '';
-  }
-
-  const wrongChoices = pick(pool, 3, correct);
-  const options = shuffle([correct, ...wrongChoices]);
-
-  const optionsEl = document.getElementById('quiz-options');
-  optionsEl.innerHTML = '';
-  options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'quiz-option';
-    btn.textContent = direction === 'en-sr' ? opt.sr : opt.en;
-    btn.onclick = () => handleQuizAnswer(btn, opt === correct, direction === 'en-sr' ? correct.sr : correct.en);
-    optionsEl.appendChild(btn);
-  });
-
-  document.getElementById('quiz-score').textContent = `${quizCorrect} / ${quizTotal}`;
-}
-
-function handleQuizAnswer(btn, isCorrect, correctAnswer) {
-  if (quizAnswered) return;
-  quizAnswered = true;
-  quizTotal++;
-
-  document.querySelectorAll('.quiz-option').forEach(b => b.classList.add('disabled'));
-
-  if (isCorrect) {
-    quizCorrect++;
-    btn.classList.add('correct');
-  } else {
-    btn.classList.add('wrong');
-    document.querySelectorAll('.quiz-option').forEach(b => {
-      if (b.textContent === correctAnswer) b.classList.add('correct');
-    });
-  }
-
-  document.getElementById('quiz-score').textContent = `${quizCorrect} / ${quizTotal}`;
-  document.getElementById('quiz-next').style.display = 'block';
-}
-
-function quizNext() {
-  loadQuiz();
-}
+document.getElementById('fc-type-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fcTypeCheck();
+});
 
 // =============================================
 // CONJUGATION TRAINER
 // =============================================
-const PRONOUNS = ['ja', 'ti', 'on/ona/ono', 'mi', 'vi/Vi', 'oni'];
-let conjStreak = 0;
-let conjBest = 0;
-let conjCurrent = null;
+let conjStreak = 0, conjBest = 0, conjCurrent = null;
+
+function getUnlockedVerbs() {
+  return DATA.verbs.filter(v => isTierUnlocked(v.tier));
+}
 
 function loadConj() {
-  const verb = DATA.verbs[Math.floor(Math.random() * DATA.verbs.length)];
+  const verbs = getUnlockedVerbs();
+  if (!verbs.length) return;
+  const verb = verbs[Math.floor(Math.random() * verbs.length)];
   const pronoun = PRONOUNS[Math.floor(Math.random() * PRONOUNS.length)];
-  conjCurrent = { verb, pronoun, answer: verb.conj[pronoun] };
+  conjCurrent = { verb, pronoun, answer: verb.conj[pronoun], id: 'c:' + verb.inf + ':' + pronoun };
 
   document.getElementById('conj-verb').textContent = verb.inf;
   document.getElementById('conj-english').textContent = verb.en;
@@ -1147,44 +1255,35 @@ function conjCheck() {
   if (!conjCurrent) return;
   const input = document.getElementById('conj-input');
   const fb = document.getElementById('conj-feedback');
-  const userAnswer = normalize(input.value);
-  const correct = normalize(conjCurrent.answer);
+  const correct = normalize(input.value) === normalize(conjCurrent.answer);
 
-  if (userAnswer === correct) {
+  if (correct) {
     input.classList.add('correct');
     fb.innerHTML = '<span class="text-success">Correct!</span>';
     conjStreak++;
     if (conjStreak > conjBest) conjBest = conjStreak;
+    recordAnswer(conjCurrent.id, 2);
     setTimeout(loadConj, 800);
   } else {
     input.classList.add('wrong');
     fb.innerHTML = `<span class="text-error">Answer: ${conjCurrent.answer}</span>`;
     conjStreak = 0;
+    recordAnswer(conjCurrent.id, 0);
     setTimeout(loadConj, 1500);
   }
-
+  updateStreak();
   document.getElementById('conj-streak').textContent = conjStreak;
   document.getElementById('conj-best').textContent = conjBest;
 }
 
-function conjNext() {
-  conjStreak = 0;
-  document.getElementById('conj-streak').textContent = 0;
-  loadConj();
-}
+function conjNext() { conjStreak = 0; document.getElementById('conj-streak').textContent = 0; loadConj(); }
 
-document.getElementById('conj-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') conjCheck();
-});
+document.getElementById('conj-input').addEventListener('keydown', e => { if (e.key === 'Enter') conjCheck(); });
 
 // =============================================
 // CASE TRAINER
 // =============================================
-let caseType = 'accusative';
-let caseExercises = [];
-let caseIndex = 0;
-let caseScore = 0;
-let caseTotalAnswered = 0;
+let caseType = 'accusative', caseExercises = [], caseIndex = 0, caseScore = 0, caseTotalAnswered = 0;
 
 function initCases() {
   const bar = document.getElementById('case-categories');
@@ -1197,8 +1296,7 @@ function initCases() {
       caseType = c;
       bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      caseScore = 0;
-      caseTotalAnswered = 0;
+      caseScore = 0; caseTotalAnswered = 0;
       loadCaseExercise();
     };
     bar.appendChild(btn);
@@ -1207,8 +1305,7 @@ function initCases() {
 }
 
 function loadCaseExercise() {
-  const caseData = DATA.cases[caseType];
-  caseExercises = shuffle(caseData.exercises);
+  caseExercises = shuffle(DATA.cases[caseType].exercises);
   caseIndex = 0;
   showCaseExercise();
 }
@@ -1216,9 +1313,8 @@ function loadCaseExercise() {
 function showCaseExercise() {
   if (!caseExercises.length) return;
   const ex = caseExercises[caseIndex % caseExercises.length];
-
   document.getElementById('case-name').textContent = DATA.cases[caseType].name + ' — ' + DATA.cases[caseType].usage;
-  document.getElementById('case-prompt').innerHTML = `<strong>${ex.prompt}</strong>`;
+  document.getElementById('case-prompt').innerHTML = '<strong>' + ex.prompt + '</strong>';
   document.getElementById('case-hint').textContent = ex.hint;
   document.getElementById('case-input').value = '';
   document.getElementById('case-input').className = 'conj-input';
@@ -1232,52 +1328,50 @@ function caseCheck() {
   const input = document.getElementById('case-input');
   const fb = document.getElementById('case-feedback');
   const ex = caseExercises[caseIndex % caseExercises.length];
-  const userAnswer = normalize(input.value);
-  const correct = normalize(ex.answer);
+  const correct = normalize(input.value) === normalize(ex.answer);
+  const caseIdx = DATA.cases[caseType].exercises.indexOf(ex);
+  const cardId = 'k:' + caseType + ':' + caseIdx;
 
   caseTotalAnswered++;
-
-  if (userAnswer === correct) {
+  if (correct) {
     input.classList.add('correct');
     fb.innerHTML = '<span class="text-success">Correct!</span>';
     caseScore++;
+    recordAnswer(cardId, 2);
     setTimeout(() => { caseIndex++; showCaseExercise(); }, 800);
   } else {
     input.classList.add('wrong');
     fb.innerHTML = `<span class="text-error">Answer: ${ex.answer}</span>`;
+    recordAnswer(cardId, 0);
     setTimeout(() => { caseIndex++; showCaseExercise(); }, 1500);
   }
-
+  updateStreak();
   document.getElementById('case-score').textContent = caseScore;
   document.getElementById('case-total').textContent = caseTotalAnswered;
 }
 
-function caseNext() {
-  caseIndex++;
-  showCaseExercise();
-}
-
-document.getElementById('case-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') caseCheck();
-});
+function caseNext() { caseIndex++; showCaseExercise(); }
+document.getElementById('case-input').addEventListener('keydown', e => { if (e.key === 'Enter') caseCheck(); });
 
 // =============================================
 // SENTENCE BUILDER
 // =============================================
-let sbExercises = [];
-let sbIndex = 0;
-let sbScore = 0;
-let sbTotalAnswered = 0;
+let sbExercises = [], sbIndex = 0, sbScore = 0, sbTotalAnswered = 0;
 
 function initSentences() {
-  sbExercises = shuffle([...DATA.sentenceExercises]);
-  sbIndex = 0;
-  sbScore = 0;
-  sbTotalAnswered = 0;
+  // Only show sentences from unlocked tiers
+  sbExercises = shuffle(DATA.sentenceExercises.filter(ex => isTierUnlocked(ex.tier || 1)));
+  sbIndex = 0; sbScore = 0; sbTotalAnswered = 0;
+  if (sbExercises.length === 0) {
+    document.getElementById('sb-english').textContent = 'Unlock more tiers to access sentences!';
+    document.getElementById('sb-sentence').textContent = '';
+    return;
+  }
   showSbExercise();
 }
 
 function showSbExercise() {
+  if (!sbExercises.length) return;
   const ex = sbExercises[sbIndex % sbExercises.length];
   document.getElementById('sb-english').textContent = ex.english;
   const parts = ex.sentence.split('___');
@@ -1291,43 +1385,40 @@ function showSbExercise() {
 }
 
 function sbCheck() {
+  if (!sbExercises.length) return;
   const input = document.getElementById('sb-input');
   const fb = document.getElementById('sb-feedback');
   const ex = sbExercises[sbIndex % sbExercises.length];
-  const userAnswer = normalize(input.value);
-  const correct = normalize(ex.blank);
+  const correct = normalize(input.value) === normalize(ex.blank);
+  const origIdx = DATA.sentenceExercises.indexOf(ex);
+  const cardId = 's:' + origIdx;
 
   sbTotalAnswered++;
-
-  if (userAnswer === correct) {
+  if (correct) {
     input.classList.add('correct');
     fb.innerHTML = '<span class="text-success">Correct!</span>';
     sbScore++;
+    recordAnswer(cardId, 2);
     setTimeout(() => { sbIndex++; showSbExercise(); }, 800);
   } else {
     input.classList.add('wrong');
     fb.innerHTML = `<span class="text-error">Answer: ${ex.blank}</span>`;
+    recordAnswer(cardId, 0);
     setTimeout(() => { sbIndex++; showSbExercise(); }, 1500);
   }
-
+  updateStreak();
   document.getElementById('sb-score').textContent = sbScore;
   document.getElementById('sb-total').textContent = sbTotalAnswered;
 }
 
-function sbNext() {
-  sbIndex++;
-  showSbExercise();
-}
-
-document.getElementById('sb-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sbCheck();
-});
+function sbNext() { sbIndex++; showSbExercise(); }
+document.getElementById('sb-input').addEventListener('keydown', e => { if (e.key === 'Enter') sbCheck(); });
 
 // =============================================
 // INIT
 // =============================================
+renderDashboard();
 initFlashcards();
-initQuiz();
 loadConj();
 initCases();
 initSentences();
