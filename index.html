@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a5276">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <title>Serbian Learning App</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -52,6 +58,11 @@ h2 { font-size: 1.4rem; margin-bottom: 16px; color: var(--primary); }
 .dash-start-btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--success); color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-bottom: 24px; transition: background 0.2s; }
 .dash-start-btn:hover { background: #219a52; }
 .dash-start-btn:disabled { background: var(--text-light); cursor: default; }
+.dash-reminder-btn { display: block; width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 12px; background: transparent; color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+.dash-reminder-btn:hover { background: var(--primary); color: white; }
+.dash-install-btn { display: block; width: 100%; padding: 14px; border: 2px solid var(--warning); border-radius: 12px; background: transparent; color: var(--warning); font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; }
+.dash-install-btn:hover { background: var(--warning); color: white; }
+.dash-notification { background: var(--primary); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; text-align: center; font-weight: 600; font-size: 0.9rem; }
 .dash-tier { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
 .dash-tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .dash-tier-name { font-weight: 700; font-size: 0.95rem; }
@@ -216,6 +227,10 @@ h2 { font-size: 1.4rem; margin-bottom: 16px; color: var(--primary); }
       </div>
     </div>
     <button class="dash-start-btn" id="dash-start-btn" onclick="launchReview()">Start Review</button>
+    <button class="dash-reminder-btn" id="dash-reminder-btn" onclick="downloadReminder()">Set Daily Reminder (Calendar)</button>
+    <div id="dash-install" style="display:none">
+      <button class="dash-install-btn" onclick="installPWA()">Install App on Home Screen</button>
+    </div>
     <h2>Progress</h2>
     <div id="dash-tiers"></div>
   </div>
@@ -1413,6 +1428,71 @@ function sbCheck() {
 
 function sbNext() { sbIndex++; showSbExercise(); }
 document.getElementById('sb-input').addEventListener('keydown', e => { if (e.key === 'Enter') sbCheck(); });
+
+// =============================================
+// PWA & NOTIFICATIONS
+// =============================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('dash-install').style.display = 'block';
+});
+
+function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('dash-install').style.display = 'none';
+  });
+}
+
+function downloadReminder() {
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Serbian Learning//EN',
+    'BEGIN:VEVENT',
+    'DTSTART:20260424T090000',
+    'RRULE:FREQ=DAILY',
+    'DURATION:PT45M',
+    'SUMMARY:Serbian Learning - Daily Review',
+    'DESCRIPTION:Time to practice Serbian! Open your Serbian Learning app.',
+    'BEGIN:VALARM',
+    'TRIGGER:-PT5M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Serbian study time in 5 minutes!',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  const blob = new Blob([ics], { type: 'text/calendar' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'serbian-daily-reminder.ics';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Show notification if due cards exist on app open
+function checkAndNotify() {
+  const due = getDueCards().length;
+  if (due > 0 && 'Notification' in window) {
+    if (Notification.permission === 'granted') {
+      new Notification('Serbian Learning', { body: `You have ${due} cards to review!`, icon: 'icon.svg' });
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(p => {
+        if (p === 'granted') new Notification('Serbian Learning', { body: `You have ${due} cards to review!`, icon: 'icon.svg' });
+      });
+    }
+  }
+}
+setTimeout(checkAndNotify, 2000);
 
 // =============================================
 // INIT
