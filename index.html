@@ -574,6 +574,53 @@ html[data-theme="light"] .tabbar{
 .dlg-bubble .de{color:var(--text-3); font-size:13px; margin-top:4px}
 .dlg-bubble .b-play{margin-top:6px; padding:4px 10px; font-size:11px; min-height:28px; border-radius:8px}
 
+/* ====================== LIVE-KONVERSATION ====================== */
+.live-stage{
+  background:linear-gradient(135deg, rgba(127,168,255,.06), rgba(255,181,71,.06));
+  border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:14px; min-height:340px; max-height:60vh; overflow-y:auto;
+  scroll-behavior:smooth;
+}
+.live-status{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:14px; border-radius:14px; margin-top:14px;
+  background:var(--surface); border:1px solid var(--border);
+  font-size:14px; min-height:64px;
+}
+.live-status.listening{
+  background:linear-gradient(135deg, rgba(91,229,163,.10), rgba(127,168,255,.06));
+  border-color:rgba(91,229,163,.4);
+}
+.live-status.speaking{
+  background:linear-gradient(135deg, rgba(127,168,255,.10), rgba(200,77,106,.06));
+  border-color:rgba(127,168,255,.4);
+}
+.live-status.help{
+  background:linear-gradient(135deg, rgba(255,181,71,.12), rgba(255,107,138,.06));
+  border-color:rgba(255,181,71,.5);
+}
+.live-status .dot{
+  width:10px; height:10px; border-radius:50%; background:var(--text-3);
+  flex-shrink:0;
+}
+.live-status.listening .dot{background:var(--good); animation:pulse 1.1s ease-in-out infinite}
+.live-status.speaking .dot{background:var(--info); animation:pulse 1.1s ease-in-out infinite}
+.live-status.help .dot{background:var(--accent)}
+@keyframes pulse{0%,100%{transform:scale(1); opacity:1} 50%{transform:scale(1.5); opacity:.6}}
+.live-status .grow{flex:1; min-width:0}
+.live-status .hint{font-size:12px; color:var(--text-3); margin-top:3px}
+.live-actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.live-actions button{flex:1; min-width:100px}
+.dlg-bubble.assisted{
+  background:rgba(255,181,71,.08);
+  border-color:rgba(255,181,71,.35);
+}
+.dlg-bubble .heard{
+  font-size:12px; color:var(--text-3); margin-top:4px;
+  font-style:italic;
+}
+.dlg-bubble.you-correct{border-color:var(--good); background:rgba(91,229,163,.08)}
+
 /* ====================== HEATMAP ====================== */
 .heatmap{display:grid; grid-template-columns:repeat(13,1fr); gap:3px; margin-top:8px}
 .heatmap .day{
@@ -3404,6 +3451,7 @@ function render(){
   if(v.type==="level")         return renderLevelHub(v.level);
   if(v.type==="topwords")      return renderTopHub();
   if(v.type==="dialoguePlay")  return renderDialoguePlay(v.id);
+  if(v.type==="dialogueLive")  return renderDialogueLive(v.id);
   if(v.type==="match")         return renderMatch();
   if(v.type==="speedRound")    return renderSpeedRound(v.phase||"intro");
   if(v.type==="diktat")        return renderDiktat();
@@ -5120,9 +5168,10 @@ function renderDialoguePlay(id){
         </div>
       `).join("")}
     </div>
-    <div class="row" style="justify-content:center; margin-top:18px; gap:8px">
+    <div class="row" style="justify-content:center; margin-top:18px; gap:8px; flex-wrap:wrap">
       <button onclick="dialoguePlayAll('${d.id}')">▶ Alle anhören</button>
-      <button class="primary" onclick="setTab('dialogues')">Fertig</button>
+      <button class="primary" onclick="setView({type:'dialogueLive', id:'${d.id}'})">🎙️ Live-Konversation</button>
+      <button onclick="setTab('dialogues')">Fertig</button>
     </div>
   `;
 }
@@ -5138,6 +5187,258 @@ function dialoguePlayAll(id){
     speechSynthesis.speak(u);
   }
   speechSynthesis.cancel(); next();
+}
+
+/* ===========================================================
+   LIVE-KONVERSATION — Dialog mit Spracherkennung
+   App spricht NPC-Zeilen, du antwortest auf Serbisch.
+   Bei Fehler/Time-out wird die Zeile auf Serbisch vorgesagt.
+   =========================================================== */
+let _liveCtx = null;
+function renderDialogueLive(id){
+  const d = DIALOGUES.find(x=>x.id===id);
+  if(!d){ setTab("dialogues"); return; }
+  if(_liveCtx){ _liveCtx.cancelled = true; }
+  _liveCtx = { id, idx:0, cancelled:false, recognizer:null, attempts:0, stats:{ok:0, assisted:0}, lines:[] };
+
+  $("#app").innerHTML = `
+    ${detailHead("🎙️ " + d.title, "liveStop()")}
+    <div class="dialog-scene"><b>${d.icon} Szene:</b> ${d.scene}</div>
+    <div class="live-stage" id="live-stage"></div>
+    <div class="live-status" id="live-status">
+      <div class="dot"></div>
+      <div class="grow">
+        <div id="live-msg">Drücke <b>Start</b>, um die Konversation zu beginnen.</div>
+        <div class="hint" id="live-hint">Die App spricht — du antwortest auf Serbisch. Bei Bedarf hilft sie dir.</div>
+      </div>
+    </div>
+    <div class="live-actions">
+      <button class="primary" id="live-start" onclick="liveStart()">▶ Start</button>
+      <button id="live-help" onclick="liveHelp()" disabled>💡 Hilfe (Sag's vor)</button>
+      <button id="live-skip" onclick="liveSkip()" disabled>⏭ Weiter</button>
+    </div>
+    <p class="muted tiny" style="margin-top:10px; text-align:center">
+      Spracherkennung läuft auf <b>sr-RS</b>. Funktioniert am besten in Chrome/Safari.
+    </p>
+  `;
+
+  if(!speechAvailable()){
+    document.getElementById("live-msg").innerHTML =
+      "⚠️ Dein Browser unterstützt keine Spracherkennung. <br>Nutze Chrome (Mac/Android) oder Safari (iOS).";
+    document.getElementById("live-start").disabled = true;
+  }
+}
+
+function liveSetStatus(state, msg, hint){
+  const box = document.getElementById("live-status");
+  if(!box) return;
+  box.classList.remove("listening","speaking","help");
+  if(state) box.classList.add(state);
+  document.getElementById("live-msg").innerHTML = msg || "";
+  document.getElementById("live-hint").innerHTML = hint || "";
+}
+
+function liveAppendBubble(line, opts){
+  opts = opts || {};
+  const stage = document.getElementById("live-stage");
+  if(!stage) return null;
+  const cls = ["dlg-line"];
+  if(line.you) cls.push("you");
+  if(opts.assisted) cls.push("assisted");
+  if(opts.correct) cls.push("you-correct");
+  const el = document.createElement("div");
+  el.className = cls.join(" ");
+  el.innerHTML = `
+    <div class="dlg-avatar">${line.you?"DU":(line.who||"?").slice(0,2).toUpperCase()}</div>
+    <div class="dlg-bubble ${opts.assisted?'assisted':''} ${opts.correct?'you-correct':''}">
+      <div class="who">${line.who||""}${opts.assisted?' · 💡 Hilfe':''}${opts.correct?' · ✓':''}</div>
+      <div class="sr">${showText(line.sr)}</div>
+      <div class="de">${line.de}</div>
+      ${opts.heard ? `<div class="heard">Gehört: „${opts.heard}"</div>`:''}
+    </div>`;
+  stage.appendChild(el);
+  stage.scrollTop = stage.scrollHeight;
+  return el;
+}
+
+function liveStart(){
+  if(!_liveCtx) return;
+  document.getElementById("live-start").disabled = true;
+  liveStep();
+}
+
+function liveStop(){
+  if(_liveCtx){ _liveCtx.cancelled = true; }
+  try{ if(_liveCtx && _liveCtx.recognizer) _liveCtx.recognizer.abort(); }catch(e){}
+  speechSynthesis.cancel();
+  setTab("dialogues");
+}
+
+function liveStep(){
+  const ctx = _liveCtx; if(!ctx || ctx.cancelled) return;
+  const d = DIALOGUES.find(x=>x.id===ctx.id); if(!d) return;
+  if(ctx.idx >= d.lines.length){ liveFinish(); return; }
+  const line = d.lines[ctx.idx];
+  ctx.attempts = 0;
+  ctx.step = (ctx.step||0) + 1;
+  const myStep = ctx.step;
+
+  if(!line.you){
+    // NPC-Zeile: vorlesen, dann weiter.
+    liveAppendBubble(line, {});
+    liveSetStatus("speaking",
+      `<b>${line.who||"NPC"}:</b> ${showText(line.sr)}`,
+      `<i>${line.de}</i>`);
+    document.getElementById("live-help").disabled = true;
+    document.getElementById("live-skip").disabled = false;
+    liveSpeak(line.sr, () => {
+      if(ctx.cancelled || ctx.step !== myStep) return;
+      ctx.idx++;
+      setTimeout(liveStep, 450);
+    });
+  } else {
+    // Du bist dran: Zeile noch nicht zeigen, nur auffordern.
+    liveSetStatus("listening",
+      `🎙️ <b>Du:</b> Sag jetzt auf Serbisch…`,
+      `Hinweis (Deutsch): <i>${line.de}</i> — drücke <b>💡 Hilfe</b>, wenn du nicht weiter weißt.`);
+    document.getElementById("live-help").disabled = false;
+    document.getElementById("live-skip").disabled = false;
+    liveListen(line);
+  }
+}
+
+function liveSpeak(text, onDone){
+  if(!("speechSynthesis" in window)){ if(onDone) onDone(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "sr-RS"; u.rate = .9;
+  const v = pickVoice(); if(v) u.voice = v;
+  u.onend = () => { if(onDone) onDone(); };
+  u.onerror = () => { if(onDone) onDone(); };
+  speechSynthesis.speak(u);
+}
+
+function liveListen(line){
+  const ctx = _liveCtx; if(!ctx || ctx.cancelled) return;
+  if(!speechAvailable()){
+    liveAssist(line, "Spracherkennung nicht verfügbar.");
+    return;
+  }
+  ctx.attempts++;
+  ctx.recognizer = startListening(
+    alts => {
+      if(!_liveCtx || _liveCtx.cancelled) return;
+      const best = alts[0] || "";
+      let bestSim = 0;
+      for(const a of alts){
+        const s = similarity(a, line.sr);
+        if(s > bestSim) bestSim = s;
+      }
+      if(bestSim >= 0.6){
+        // Erfolg
+        liveAppendBubble(line, {correct:true, heard:best});
+        ctx.stats.ok++;
+        sfx("ok");
+        liveSetStatus("", `✓ Super! <b>${showText(line.sr)}</b>`, `<i>${line.de}</i>`);
+        setTimeout(()=>{ if(_liveCtx && !_liveCtx.cancelled){ ctx.idx++; liveStep(); } }, 900);
+      } else {
+        // Daneben — bei zweitem Versuch helfen
+        if(ctx.attempts >= 2){
+          liveAssist(line, `Gehört: „${best}" — schauen wir's nochmal an.`);
+        } else {
+          liveSetStatus("listening",
+            `🤔 Hmm — gehört: „${best}". Versuch's nochmal!`,
+            `Soll: <i>${showText(line.sr)}</i> &nbsp;·&nbsp; ${line.de}`);
+          setTimeout(()=>{ if(_liveCtx && !_liveCtx.cancelled) liveListen(line); }, 1200);
+        }
+      }
+    },
+    err => {
+      if(!_liveCtx || _liveCtx.cancelled) return;
+      // no-speech / aborted / not-allowed → Hilfe-Modus
+      if(/Mikrofon-Zugriff/i.test(err)){
+        liveSetStatus("help", "🎤 " + err, "Browser-Einstellungen prüfen, dann erneut starten.");
+        document.getElementById("live-start").disabled = false;
+        return;
+      }
+      liveAssist(line, err);
+    }
+  );
+}
+
+function liveAssist(line, reason){
+  const ctx = _liveCtx; if(!ctx || ctx.cancelled) return;
+  ctx.stats.assisted++;
+  liveAppendBubble(line, {assisted:true});
+  liveSetStatus("help",
+    `💡 Sag das so: <b>${showText(line.sr)}</b>`,
+    `${reason||""} — Ich spreche es jetzt vor, dann sprich's nach.`);
+  liveSpeak(line.sr, () => {
+    if(!_liveCtx || _liveCtx.cancelled) return;
+    // Nochmal langsamer, dann weiter
+    setTimeout(()=>{
+      if(!_liveCtx || _liveCtx.cancelled) return;
+      const u = new SpeechSynthesisUtterance(line.sr);
+      u.lang="sr-RS"; u.rate=.7;
+      const v = pickVoice(); if(v) u.voice=v;
+      u.onend = () => {
+        if(!_liveCtx || _liveCtx.cancelled) return;
+        setTimeout(()=>{ if(_liveCtx && !_liveCtx.cancelled){ ctx.idx++; liveStep(); } }, 600);
+      };
+      speechSynthesis.speak(u);
+    }, 350);
+  });
+}
+
+function liveHelp(){
+  const ctx = _liveCtx; if(!ctx || ctx.cancelled) return;
+  const d = DIALOGUES.find(x=>x.id===ctx.id); if(!d) return;
+  const line = d.lines[ctx.idx]; if(!line || !line.you) return;
+  try{ if(ctx.recognizer) ctx.recognizer.abort(); }catch(e){}
+  liveAssist(line, "Du hast um Hilfe gebeten.");
+}
+
+function liveSkip(){
+  const ctx = _liveCtx; if(!ctx || ctx.cancelled) return;
+  const d = DIALOGUES.find(x=>x.id===ctx.id); if(!d) return;
+  const line = d.lines[ctx.idx]; if(!line) return;
+  ctx.step = (ctx.step||0) + 1;          // invalidiert pendente Callbacks
+  try{ if(ctx.recognizer) ctx.recognizer.abort(); }catch(e){}
+  speechSynthesis.cancel();
+  if(line.you){
+    liveAppendBubble(line, {assisted:true});
+    ctx.stats.assisted++;
+  }
+  // NPC-Zeile wurde in liveStep schon angezeigt — nicht doppelt anhängen.
+  ctx.idx++;
+  setTimeout(liveStep, 200);
+}
+
+function liveFinish(){
+  const ctx = _liveCtx; if(!ctx) return;
+  const d = DIALOGUES.find(x=>x.id===ctx.id);
+  const total = ctx.stats.ok + ctx.stats.assisted;
+  const pct = total ? Math.round(ctx.stats.ok / total * 100) : 0;
+  liveSetStatus("",
+    `🎉 Konversation beendet — <b>${ctx.stats.ok}</b> selbst, <b>${ctx.stats.assisted}</b> mit Hilfe (${pct}% solo).`,
+    `Gut gemacht! Nochmal üben festigt's.`);
+  document.getElementById("live-start").disabled = false;
+  document.getElementById("live-start").textContent = "↻ Nochmal";
+  document.getElementById("live-start").onclick = () => setView({type:"dialogueLive", id: ctx.id});
+  document.getElementById("live-help").disabled = true;
+  document.getElementById("live-skip").disabled = true;
+
+  // XP belohnen
+  if(d){
+    const xp = 25 + ctx.stats.ok * 3;
+    awardXP(xp, `Live-Konversation · ${d.title}`);
+    if(!(state.dialoguesDone||[]).includes(d.id)){
+      state.dialoguesDone = state.dialoguesDone || [];
+      state.dialoguesDone.push(d.id);
+    }
+    save();
+  }
+  if(pct >= 70) confettiBurst();
 }
 
 /* ===========================================================
