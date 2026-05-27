@@ -893,6 +893,69 @@ html[data-theme="light"] .tabbar{
 .chunk-card .chunk-sr{font-size:18px; font-weight:600}
 .chunk-card .chunk-de{font-size:13px; color:var(--text-3); margin-top:2px}
 .chunk-card .chunk-cat{display:inline-block; font-size:10px; padding:2px 8px; border-radius:99px; background:var(--surface-3); color:var(--text-3); margin-top:6px}
+
+/* === Vereinfachung 2026: Ein-Tap-Home & Quick-Session === */
+.home-simple{max-width:480px; margin:0 auto; padding:14px 0 50px; text-align:center}
+.hs-greet{font-size:22px; font-weight:800; letter-spacing:-.01em; margin-top:8px}
+.hs-chips{display:flex; gap:8px; justify-content:center; margin-top:12px}
+.min-ring-wrap{display:grid; place-items:center; margin:30px 0 16px}
+.ring.big .ring-content b{font-size:48px; font-weight:900}
+.ring.big .ring-content small{font-size:12px; margin-top:7px; letter-spacing:.04em; text-transform:none}
+.hs-status{font-size:15px; color:var(--text-2); margin-bottom:24px}
+.hs-status.done{color:var(--good); font-weight:700}
+.start-btn{display:flex; flex-direction:column; align-items:center; gap:2px; width:100%;
+  padding:22px 18px; border:none; border-radius:var(--r-xl); cursor:pointer;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#241433;
+  box-shadow:var(--glow-accent); transition:transform .14s var(--ease)}
+.start-btn:hover{transform:translateY(-2px)}
+.start-btn:active{transform:scale(.97)}
+.start-btn .sb-ico{font-size:24px; line-height:1}
+.start-btn .sb-main{font-size:23px; font-weight:900; letter-spacing:-.01em}
+.start-btn .sb-sub{font-size:13px; font-weight:700; opacity:.78}
+.hs-slot{margin-top:20px; font-size:13px; color:var(--text-3)}
+.hs-slot b{color:var(--text-2)}
+.hs-more{display:inline-block; margin-top:22px; color:var(--text-4)}
+
+/* Session-Container */
+.session{max-width:560px; margin:0 auto; padding-bottom:40px}
+.session-top{display:flex; align-items:center; gap:10px; margin-bottom:22px}
+.sess-prog{flex:1; height:9px; background:var(--surface-3); border-radius:99px; overflow:hidden; border:1px solid var(--border)}
+.sess-prog i{display:block; height:100%; width:0; border-radius:99px; background:linear-gradient(90deg, var(--good), #3fcf90); transition:width .5s var(--ease-out)}
+.sess-min{font-size:12px; color:var(--text-3); white-space:nowrap; font-variant-numeric:tabular-nums}
+.sess-combo{font-weight:800; color:var(--accent); white-space:nowrap; font-variant-numeric:tabular-nums; min-width:46px; text-align:right}
+.q-prompt{text-align:center; margin:6px 0 26px}
+.q-prompt .q-sub{color:var(--text-3); font-size:14px; margin-bottom:8px}
+.q-word{font-size:38px; font-weight:900; letter-spacing:-.01em; line-height:1.15}
+.opts{display:grid; gap:10px}
+.opt{display:flex; align-items:center; width:100%; padding:16px 18px; border-radius:var(--r-md);
+  background:var(--surface); border:1.5px solid var(--border); color:var(--text);
+  font-size:17px; font-weight:700; cursor:pointer; text-align:left; transition:.12s var(--ease)}
+.opt:hover{border-color:var(--border-strong)}
+.opt:active{transform:scale(.985)}
+.opt.correct{background:rgba(91,229,163,.16); border-color:var(--good); color:var(--good)}
+.opt.wrong{background:rgba(255,107,138,.14); border-color:var(--bad); color:var(--bad)}
+.opt.dim{opacity:.42}
+.sess-fb{text-align:center; margin-top:20px; font-weight:800; font-size:17px; min-height:22px}
+.sess-fb.good{color:var(--good)} .sess-fb.bad{color:var(--bad)}
+.listen-big{width:104px; height:104px; border-radius:50%; border:none; cursor:pointer; font-size:44px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#241433; box-shadow:var(--glow-accent); transition:transform .14s var(--ease)}
+.listen-big:active{transform:scale(.94)}
+/* Satz bauen */
+.tray{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; min-height:56px;
+  padding:12px; border:1.5px dashed var(--border); border-radius:var(--r-md); margin-bottom:16px}
+.tiles{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.wtile{padding:12px 16px; border-radius:12px; background:var(--surface-2); border:1.5px solid var(--border);
+  color:var(--text); font-size:17px; font-weight:700; cursor:pointer; transition:.12s var(--ease)}
+.wtile:active{transform:scale(.95)}
+/* Paare */
+.pairs-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.pcell{padding:18px 12px; border-radius:var(--r-md); background:var(--surface); border:1.5px solid var(--border);
+  color:var(--text); font-weight:700; font-size:16px; cursor:pointer; text-align:center; transition:.12s var(--ease)}
+.pcell.sr{font-family:'Plus Jakarta Sans'}
+.pcell.sel{border-color:var(--accent); background:rgba(255,181,71,.12)}
+.pcell.matched{opacity:.35; pointer-events:none; border-color:var(--good)}
+.pcell.miss{border-color:var(--bad); animation:sess-shake .32s}
+@keyframes sess-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 </style>
 </head>
 <body>
@@ -2858,7 +2921,12 @@ const defaultState = {
   lastSleepReminder:null,// "y-m-d" -> nicht doppelt nachts mahnen
   noticingOn:true,       // Endungs-Highlighting (Schmidt 1990)
   scienceSeen:{},        // tooltipId -> true (zeigt Quelle nur 1x)
-  coverageHistory:{}     // "y-m-d" -> { top:N, total:M } für Verlaufs-Anzeige
+  coverageHistory:{},    // "y-m-d" -> { top:N, total:M } für Verlaufs-Anzeige
+  /* === Vereinfachung 2026: Ein-Tap-Session & 30-Min-Slots === */
+  dailyMinutesGoal:30,   // tägliches Lernzeit-Ziel in Minuten
+  minutesToday:0,        // heute aktiv gelernte Minuten
+  minutesDate:null,      // "y-m-d" für täglichen Reset
+  slotTime:"19:00"       // fixer täglicher Lern-Slot (Selbstverpflichtung)
 };
 function load(){
   try{
@@ -3349,6 +3417,7 @@ function confettiBurst(){
    =========================================================== */
 const $ = sel => document.querySelector(sel);
 function setView(v){
+  if(state.view && state.view.type==="session" && v.type!=="session") stopLearnTimer();
   state.view = Object.assign({tab: state.view.tab || "home"}, v);
   save(); render(); window.scrollTo({top:0, behavior:"instant"});
 }
@@ -3367,11 +3436,8 @@ function updateHeader(){
 
 /* tabbar render */
 const TABS = [
-  {id:"home",      icon:"🏠", label:"Heute"},
-  {id:"learn",     icon:"📚", label:"Lernen"},
-  {id:"practice",  icon:"⚡", label:"Üben"},
-  {id:"dialogues", icon:"💬", label:"Dialoge"},
-  {id:"profile",   icon:"👤", label:"Profil"},
+  {id:"home", icon:"🏠", label:"Lernen"},
+  {id:"more", icon:"⋯", label:"Mehr"},
 ];
 function renderTabbar(){
   const el = $("#tabs");
@@ -3436,6 +3502,7 @@ function render(){
   renderTabbar();
   const v = state.view;
   // detail views first
+  if(v.type==="session")       return renderSession();
   if(v.type==="lesson")        return renderLessonHub(v.level, v.lessonId);
   if(v.type==="flashcards")    return renderFlashcards(v.level, v.lessonId);
   if(v.type==="quiz")          return renderQuiz(v.level, v.lessonId);
@@ -3467,6 +3534,7 @@ function render(){
   if(v.type==="coverage")      return renderCoverage();
   if(v.type==="methodik")      return renderMethodik();
   // tabs
+  if(state.view.tab === "more") return renderMoreTab();
   if(state.view.tab === "learn") return renderLearnTab();
   if(state.view.tab === "practice") return renderPracticeTab();
   if(state.view.tab === "dialogues") return renderDialoguesTab();
@@ -3487,122 +3555,46 @@ function detailHead(title, onBack){
    HOME TAB — Heute
    =========================================================== */
 function renderHomeTab(){
+  tickMinutes();
   const dueN = srsDueCount();
-  const wod = wordOfDay();
-  const goalPct = Math.min(100, Math.round((state.dailyDone/state.dailyGoal)*100));
-  const day = state.currentDay;
-  const set = getSet(day);
-  const setDone = set ? setDoneCount(day) : 3;
-  const recentAch = (state.achievements||[]).slice(-3).map(id => ACHIEVEMENTS.find(a=>a.id===id)).filter(Boolean);
+  const mins = state.minutesToday||0;
+  const goal = state.dailyMinutesGoal||30;
+  const pct  = Math.min(100, Math.round(mins/goal*100));
+  const rem  = Math.max(0, goal-mins);
+  const done = rem===0;
   const greet = greeting();
+  const set = getSet(state.currentDay);
 
   $("#app").innerHTML = `
-    <section class="hero">
-      <h1>${greet}, Kaito 👋</h1>
-      <p>Heute ist <b>Tag ${day}${set?` von ${LEARN_SETS.length}`:""}</b>${set?` · Fokus: <b>${set.focus}</b>`:""}. Ein paar Minuten täglich – und du redest am Stammtisch mit.</p>
-      <div class="hero-stats">
-        <div class="hero-stat accent"><span class="v">${state.xp}</span><span class="l">⭐ Punkte</span></div>
-        <div class="hero-stat"><span class="v">${state.streak}</span><span class="l">🔥 Streak</span></div>
-        <div class="hero-stat"><span class="v">${state.dailyDone}/${state.dailyGoal}</span><span class="l">Tagesziel</span></div>
-        <div class="hero-stat"><span class="v">${dueN}</span><span class="l">⏳ fällig</span></div>
+    <section class="home-simple">
+      <div class="hs-greet">${greet}, Kaito 👋</div>
+      <div class="hs-chips">
+        <span class="stat-chip streak ${state.streak>0?'alive':''}"><span class="ico">🔥</span><span class="num">${state.streak}</span></span>
+        <span class="stat-chip xp"><span class="ico">⭐</span><span class="num">${state.xp}</span></span>
       </div>
-      <div class="bar" style="margin-top:14px"><i style="width:${goalPct}%"></i></div>
-    </section>
 
-    ${set ? renderTodaysetCardHTML(day) : `
-      <section class="card gradient" style="margin-top:14px; text-align:center; padding:30px">
-        <div style="font-size:46px; margin-bottom:8px">🏆</div>
-        <h2>42-Tage-Curriculum geschafft!</h2>
-        <p class="muted" style="margin:8px 0 14px; font-size:14px">Du beherrschst alle Stammtisch-Bausteine. Halte's mit täglichen Reviews & Dialogen frisch.</p>
-        <button class="primary" onclick="setView({type:'srs'})">Reviews starten →</button>
-      </section>
-    `}
-
-    ${dueN>0 ? `
-      <section class="card elev" style="margin-top:12px; background:linear-gradient(135deg, rgba(255,181,71,.08), var(--surface))">
-        <div class="row center between">
-          <div>
-            <h3 style="display:flex; align-items:center; gap:8px">⏳ ${dueN} Karten fällig <span class="badge due">FSRS-4.5</span></h3>
-            <div class="muted tiny" style="margin-top:4px">Vergessenskurve – jetzt fixen kostet 30 Sek, später 5 Min</div>
+      <div class="min-ring-wrap">
+        <div class="ring big" id="minRing" style="--p:${pct}; --sz:176px; --bw:13px">
+          <div class="ring-content">
+            <b>${mins}</b>
+            <small>von ${goal} Min heute</small>
           </div>
-          <button class="primary" onclick="setView({type:'srs'})">Los →</button>
-        </div>
-      </section>
-    ` : ""}
-
-    ${(()=>{ const cv = coverageStats(); return `
-      <section class="card cov-card" style="margin-top:12px" onclick="setView({type:'coverage'})">
-        <div class="row between center">
-          <div>
-            <div class="muted tiny">📊 Coverage Top-${cv.totalTop}</div>
-            <div style="font-size:22px; font-weight:800; color:var(--accent)">~${cv.coveragePct}% Alltag <span style="font-size:12px; color:var(--text-3); font-weight:400">${cv.knownTop}/${cv.totalTop} sicher</span></div>
-          </div>
-          <span class="sci-pill" onclick="event.stopPropagation(); showScience('coverage')">📊 Nation 2001</span>
-        </div>
-        <div class="cov-bar" style="margin-top:8px"><i style="width:${cv.coveragePct}%"></i></div>
-      </section>
-    `})()}
-
-    <section class="section">
-      <div class="section-head">
-        <div class="lead"><h2>💡 Wort des Tages</h2><small>${wod.cat || "Vokabel"}</small></div>
-      </div>
-      <div class="card elev" onclick="speak('${jsStr(wod.sr)}')">
-        <div class="row center between">
-          <div>
-            <div style="font-family:'Plus Jakarta Sans'; font-size:28px; font-weight:800; letter-spacing:-.01em">${showText(wod.sr)}</div>
-            <div class="muted" style="margin-top:4px">${wod.de}</div>
-            ${wod.ipa?`<div style="color:var(--good); font-size:12px; margin-top:4px; font-style:italic">[${wod.ipa}]</div>`:""}
-          </div>
-          <button class="icon-btn" onclick="event.stopPropagation(); speak('${jsStr(wod.sr)}')" aria-label="Aussprache">🔊</button>
         </div>
       </div>
-    </section>
 
-    <section class="section">
-      <div class="section-head"><div class="lead"><h2>⚡ Schnellzugriff</h2></div></div>
-      <div class="grid auto-160">
-        <button class="tile glow" onclick="setView({type:'srs'})">
-          <div class="icon">🧠</div>
-          <div class="ttl">Smart Review</div>
-          <div class="sub">${dueN} Karten fällig</div>
-        </button>
-        <button class="tile glow" onclick="setView({type:'speedRound'})">
-          <div class="icon">⏱️</div>
-          <div class="ttl">Speed-Round</div>
-          <div class="sub">60 Sek · Bestleistung ${state.bestSpeed||0}</div>
-        </button>
-        <button class="tile glow" onclick="setView({type:'match'})">
-          <div class="icon">🎴</div>
-          <div class="ttl">Memory-Match</div>
-          <div class="sub">8 Paare verbinden</div>
-        </button>
-        <button class="tile glow" onclick="setView({type:'diktat'})">
-          <div class="icon">🎧</div>
-          <div class="ttl">Diktat</div>
-          <div class="sub">Hör & tipp</div>
-        </button>
+      <div class="hs-status ${done?'done':''}">
+        ${done ? "✅ Tagesziel geschafft — bravo!" : `Heute noch <b>${rem} Min</b> bis dein Slot erfüllt ist`}
       </div>
-    </section>
 
-    ${recentAch.length ? `
-      <section class="section">
-        <div class="section-head">
-          <div class="lead"><h2>🏆 Errungenschaften</h2></div>
-          <a class="more" onclick="setView({type:'achievements'})">Alle →</a>
-        </div>
-        <div class="grid auto-220">
-          ${recentAch.map(a=>`
-            <div class="ach-card got">
-              <div class="ai">${a.icon}</div>
-              <div><div class="at">${a.title}</div><div class="ad">${a.desc}</div></div>
-            </div>`).join("")}
-        </div>
-      </section>
-    ` : ""}
+      <button class="start-btn" onclick="startSession()">
+        <span class="sb-ico">▶</span>
+        <span class="sb-main">Los geht's</span>
+        <span class="sb-sub">${dueN>0?`${dueN} fällig · `:""}${set?`Tag ${state.currentDay} · `:""}gemischte Übung</span>
+      </button>
 
-    <p class="foot-credit">Srpski Studio · Mit Liebe für gute Pivo-Pausen 🍺</p>
-  `;
+      <div class="hs-slot">⏰ Dein Slot: <b>${state.slotTime||"19:00"}</b> · <a class="more tiny" onclick="editSlot()">ändern</a> · <a class="more tiny" onclick="downloadSlotIcs()">📅 in Kalender</a></div>
+      <a class="more tiny hs-more" onclick="setTab('more')">··· mehr Modi &amp; Inhalte ···</a>
+    </section>`;
 }
 function greeting(){
   const h = new Date().getHours();
@@ -5128,7 +5120,7 @@ function renderDialoguesTab(){
           const done = (state.dialoguesDone||[]).includes(d.id);
           const locked = d.minLevel > state.unlockedLevel;
           return `
-            <button class="tile ${done?'done':''} ${locked?'disabled':''} glow" onclick="${locked?'':`setView({type:'dialoguePlay', id:'${d.id}'})`}">
+            <button class="tile ${done?'done':''} ${locked?'disabled':''} glow" onclick="${locked?'':`setView({type:'dialogueLive', id:'${d.id}'})`}">
               <div class="icon">${d.icon}</div>
               <div class="ttl">${d.title}</div>
               <div class="sub">${d.scene}</div>
@@ -6243,6 +6235,371 @@ function maybeOnboard(){
     <button class="primary lg full" style="margin-top:10px" onclick="state.onboardingDone=true; save(); hideSheet()">Los geht's →</button>
   `;
   showSheet();
+}
+
+/* ===========================================================
+   QUICK-SESSION — endlose, gemischte Ein-Tap-Übung (Vereinfachung 2026)
+   Herzstück: ein Button → endlose Mischung aus MC, Hören, Paaren,
+   Satz-Bauen & Tippen. Zieht adaptiv aus FSRS-Fälligkeit + Tagesset.
+   =========================================================== */
+let sessionState = null;
+let _advTimer = null;
+
+function norm(s){ return (s||"").toLowerCase().trim().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g,""); }
+function deDistractors(w,n){ return shuffle(TOP_WORDS.filter(x=>x.de!==w.de)).slice(0,n).map(x=>x.de); }
+function srDistractors(w,n){ return shuffle(TOP_WORDS.filter(x=>x.sr!==w.sr)).slice(0,n).map(x=>x.sr); }
+
+/* nächstes Einzelwort: erst fällige Reviews, dann neue Tageswörter, dann unbekannte Top-Wörter */
+function nextWordForSession(){
+  const due = srsDueWords();
+  if(due.length) return {w: pickN(due,1)[0], isNew:false};
+  const set = getSet(state.currentDay);
+  if(set){
+    for(const sr of set.new){
+      const w = findWordBySr(sr);
+      if(!w._missing && !state.fsrs[w.sr] && !state.srs[w.sr]) return {w, isNew:true};
+    }
+  }
+  const unknown = TOP_WORDS.filter(w=>!isWordKnown(w.sr));
+  if(unknown.length) return {w: pickN(unknown,1)[0], isNew:false};
+  return {w: pickN(TOP_WORDS,1)[0], isNew:false};
+}
+function mcOptions(w, dir){
+  if(dir==="sr2de"){
+    return {options: shuffle([w.de, ...deDistractors(w,3)]), correct:w.de, promptText:w.sr};
+  }
+  return {options: shuffle([w.sr, ...srDistractors(w,3)]), correct:w.sr, promptText:w.de};
+}
+function buildTypeItem(w){ return {kind:"type", w, phase:"q", correct:w.sr, promptText:w.de}; }
+function buildPairsItem(){
+  const due = srsDueWords();
+  const pool = due.length>=4 ? due : TOP_WORDS;
+  const words = pickN(pool,4);
+  if(words.length<4) return null;
+  const cells=[];
+  words.forEach((w,i)=>{ cells.push({k:i,side:"sr",text:w.sr}); cells.push({k:i,side:"de",text:w.de}); });
+  return {kind:"pairs", phase:"q", words, cells:shuffle(cells), sel:[], matched:[], miss:null};
+}
+function buildSentenceItem(){
+  const maxDay = Math.min(state.currentDay, LEARN_SETS.length);
+  const cands = LEARN_SETS.slice(0, Math.max(1,maxDay))
+    .filter(s=>s.build && s.build.sr && s.build.sr.split(/\s+/).length>=2 && s.build.sr.split(/\s+/).length<=7);
+  if(!cands.length) return null;
+  const set = cands[Math.floor(Math.random()*cands.length)];
+  const tokens = set.build.sr.split(/\s+/);
+  return {kind:"build", phase:"q", de:set.build.de, sr:set.build.sr, tokens,
+          pool: shuffle(tokens.map(t=>({t}))), chosen:[]};
+}
+function buildSessionItem(){
+  const n = sessionState.answered;
+  if(n>0 && n%6===0){ const it=buildPairsItem(); if(it) return it; }
+  if(n>0 && n%4===0){ const it=buildSentenceItem(); if(it) return it; }
+  const pick = nextWordForSession();
+  const w = pick.w;
+  if(pick.isNew) return Object.assign({kind:"mc", dir:"sr2de", w, phase:"intro"}, mcOptions(w,"sr2de"));
+  const r = n%5;
+  if(r===1) return Object.assign({kind:"listen", w, phase:"q"}, mcOptions(w,"sr2de"));
+  if(r===4) return buildTypeItem(w);
+  const dir = (r===0||r===3) ? "de2sr" : "sr2de";
+  return Object.assign({kind:"mc", dir, w, phase:"q"}, mcOptions(w,dir));
+}
+
+/* --- Bewertung: speist FSRS, XP, Combo, Streak --- */
+function gradeSession(w, correct){
+  if(w && w.sr) srsRecord(w.sr, correct?4:0);
+  if(correct){
+    sessionState.combo++;
+    sessionState.best = Math.max(sessionState.best, sessionState.combo);
+    const xp = 5 + Math.min(10, sessionState.combo);
+    sessionState.xpGained += xp;
+    awardXP(xp);
+    sfx("ok");
+    if([5,10,20,30,50].includes(sessionState.combo)){ confettiBurst(); sfx("win"); toast(`🔥 ${sessionState.combo}er-Combo!`,"good"); }
+  } else {
+    sessionState.combo = 0;
+    sfx("bad");
+  }
+  sessionState.answered++;
+  if(sessionState.answered === 1) bumpStreak();
+  save();
+}
+function scheduleAdvance(ms){
+  clearTimeout(_advTimer);
+  _advTimer = setTimeout(()=>{ if(state.view.type==="session") sessNext(); }, ms);
+}
+function sessNext(){ sessionState.item = buildSessionItem(); render(); }
+function introContinue(){ sessionState.item.phase = "q"; render(); }
+
+/* --- Antwort-Handler --- */
+function sessAnswer(i){
+  const it = sessionState.item;
+  if(!it || it.locked || it.phase!=="q") return;
+  const val = it.options[i];
+  it.locked = true; it.picked = val; it.wasCorrect = (val===it.correct);
+  gradeSession(it.w, it.wasCorrect);
+  render();
+  scheduleAdvance(it.wasCorrect ? 850 : 1700);
+}
+function sessPair(idx){
+  const it = sessionState.item;
+  if(!it || it.locked || it.matched.includes(idx)) return;
+  if(it.sel.includes(idx)){ it.sel = it.sel.filter(x=>x!==idx); render(); return; }
+  it.sel.push(idx);
+  if(it.sel.length===2){
+    const [a,b] = it.sel;
+    if(it.cells[a].k===it.cells[b].k && it.cells[a].side!==it.cells[b].side){
+      it.matched.push(a,b); it.sel=[]; sfx("ok");
+      if(it.matched.length===it.cells.length){
+        it.locked = true;
+        it.words.forEach(w=>srsRecord(w.sr,4));
+        gradeSession(null,true);
+        render(); scheduleAdvance(750); return;
+      }
+    } else {
+      it.miss=[a,b]; it.sel=[]; sfx("bad");
+      setTimeout(()=>{ if(sessionState.item===it){ it.miss=null; render(); } }, 550);
+    }
+  }
+  render();
+}
+function sessBuildPick(i){
+  const it = sessionState.item;
+  if(!it || it.locked) return;
+  it.chosen.push(i);
+  if(it.chosen.length===it.tokens.length){ sessBuildCheck(); return; }
+  render();
+}
+function sessBuildUndo(k){
+  const it = sessionState.item;
+  if(!it || it.locked) return;
+  it.chosen.splice(k,1); render();
+}
+function sessBuildCheck(){
+  const it = sessionState.item;
+  it.locked = true;
+  const got = it.chosen.map(i=>it.pool[i].t).join(" ");
+  it.wasCorrect = norm(got)===norm(it.sr);
+  it.fbKind = it.wasCorrect ? "good" : "bad";
+  it.fb = it.wasCorrect ? "✓ Tačno!" : `✗ ${it.sr}`;
+  gradeSession(null, it.wasCorrect);
+  render(); scheduleAdvance(it.wasCorrect ? 900 : 1900);
+}
+function sessTypeCheck(){
+  const it = sessionState.item;
+  if(!it || it.locked) return;
+  const inp = document.getElementById("sxinp");
+  const v = inp ? inp.value : "";
+  it.locked = true; it.picked = v;
+  it.wasCorrect = norm(v)===norm(it.correct);
+  it.fbKind = it.wasCorrect ? "good" : "bad";
+  it.fb = it.wasCorrect ? "✓ Richtig!" : `✗ ${it.correct}`;
+  gradeSession(it.w, it.wasCorrect);
+  render(); scheduleAdvance(it.wasCorrect ? 900 : 1900);
+}
+
+/* --- Session beenden (mit sanftem Nudge unter Tagesziel) --- */
+function sessEnd(force){
+  const rem = Math.max(0,(state.dailyMinutesGoal||30)-(state.minutesToday||0));
+  if(!force && rem>0){
+    const c = document.getElementById("sheetContent");
+    c.innerHTML = `
+      <h2 style="margin-bottom:6px">Schon Schluss? 🙈</h2>
+      <p class="muted" style="margin-bottom:16px">Heute noch <b>${rem} Min</b> bis dein Slot erfüllt ist. Dranbleiben zahlt sich aus 💪</p>
+      <button class="primary lg full" onclick="hideSheet()">Weiter lernen</button>
+      <button class="ghost full" style="margin-top:8px" onclick="hideSheet(); sessEnd(true)">Trotzdem schliessen</button>`;
+    showSheet(); return;
+  }
+  stopLearnTimer(); sessionState = null; setTab('home');
+}
+
+/* --- Render: Session-Container + Item --- */
+function renderSession(){
+  if(!sessionState){
+    sessionState = {combo:0, best:0, xpGained:0, answered:0, item:null};
+    sessionState.item = buildSessionItem();
+  }
+  startLearnTimer();
+  const it = sessionState.item;
+  const mins = state.minutesToday||0, goal = state.dailyMinutesGoal||30;
+  const top = `
+    <div class="session-top">
+      <button class="icon-btn" onclick="sessEnd(false)" aria-label="Schliessen">✕</button>
+      <div class="sess-prog"><i id="sessMinFill" style="width:${Math.min(100,Math.round(mins/goal*100))}%"></i></div>
+      <span class="sess-min" id="sessMin">${mins}/${goal}m</span>
+      <span class="sess-combo">🔥 ${sessionState.combo}</span>
+    </div>`;
+  let body = "";
+  if(!it){ body = `<div class="card elev center" style="padding:30px"><div style="font-size:46px">🎉</div><h2>Alles wiederholt!</h2><button class="primary" style="margin-top:12px" onclick="sessNext()">Weiter</button></div>`; }
+  else if(it.kind==="mc" && it.phase==="intro") body = renderSessIntro(it);
+  else if(it.kind==="mc")     body = renderSessMc(it);
+  else if(it.kind==="listen") body = renderSessListen(it);
+  else if(it.kind==="pairs")  body = renderSessPairs(it);
+  else if(it.kind==="build")  body = renderSessBuild(it);
+  else if(it.kind==="type")   body = renderSessType(it);
+  $("#app").innerHTML = `<div class="session">${top}${body}</div>`;
+  if(it && it.phase==="intro" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
+  if(it && it.kind==="listen" && it.phase==="q" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
+  if(it && it.kind==="type" && !it.locked){ const i=document.getElementById("sxinp"); if(i) i.focus(); }
+}
+function renderSessIntro(it){
+  return `
+    <div class="q-prompt" style="margin-top:24px">
+      <span class="badge" style="background:rgba(255,181,71,.16); color:var(--accent); border-color:rgba(255,181,71,.3)">✨ NEU</span>
+      <div class="q-word" style="margin-top:16px">${showText(it.w.sr)} <button class="icon-btn" onclick="speak('${jsStr(it.w.sr)}')" aria-label="Hören">🔊</button></div>
+      <div class="q-sub" style="font-size:19px; margin-top:8px; color:var(--text-2)">${it.w.de}</div>
+      ${it.w.ipa?`<div style="color:var(--good); font-size:13px; margin-top:4px; font-style:italic">[${it.w.ipa}]</div>`:""}
+    </div>
+    <button class="primary lg full" style="margin-top:22px" onclick="introContinue()">Verstanden →</button>`;
+}
+function renderSessMc(it){
+  const ans = it.locked;
+  return `
+    <div class="q-prompt">
+      <div class="q-sub">${it.dir==="sr2de"?"Was heisst das?":"Wie sagt man das auf Serbisch?"}</div>
+      <div class="q-word">${it.dir==="sr2de"?showText(it.promptText):it.promptText} ${it.dir==="sr2de"?`<button class="icon-btn" onclick="speak('${jsStr(it.w.sr)}')" aria-label="Hören">🔊</button>`:""}</div>
+    </div>
+    <div class="opts">
+      ${it.options.map((o,i)=>{
+        let cls="opt";
+        if(ans){ if(o===it.correct) cls+=" correct"; else if(o===it.picked) cls+=" wrong"; else cls+=" dim"; }
+        const disp = it.dir==="de2sr" ? showText(o) : o;
+        return `<button class="${cls}" ${ans?"":`onclick="sessAnswer(${i})"`}>${disp}</button>`;
+      }).join("")}
+    </div>
+    ${ans?`<div class="sess-fb ${it.wasCorrect?'good':'bad'}">${it.wasCorrect?"✓ Richtig!":`✗ ${it.dir==='de2sr'?showText(it.correct):it.correct}`}</div>`:""}`;
+}
+function renderSessListen(it){
+  const ans = it.locked;
+  return `
+    <div class="q-prompt">
+      <div class="q-sub">Hören & verstehen</div>
+      <button class="listen-big" onclick="speak('${jsStr(it.w.sr)}')" aria-label="Nochmal abspielen">🔊</button>
+      ${ans?`<div class="q-word" style="font-size:24px; margin-top:12px">${showText(it.w.sr)}</div>`:`<div class="q-sub" style="margin-top:8px">Tippe auf 🔊 zum Wiederholen</div>`}
+    </div>
+    <div class="opts">
+      ${it.options.map((o,i)=>{
+        let cls="opt";
+        if(ans){ if(o===it.correct) cls+=" correct"; else if(o===it.picked) cls+=" wrong"; else cls+=" dim"; }
+        return `<button class="${cls}" ${ans?"":`onclick="sessAnswer(${i})"`}>${o}</button>`;
+      }).join("")}
+    </div>
+    ${ans?`<div class="sess-fb ${it.wasCorrect?'good':'bad'}">${it.wasCorrect?"✓ Richtig!":`✗ ${it.correct}`}</div>`:""}`;
+}
+function renderSessPairs(it){
+  return `
+    <div class="q-prompt"><div class="q-sub">Verbinde die Paare</div></div>
+    <div class="pairs-grid">
+      ${it.cells.map((c,idx)=>{
+        let cls = "pcell" + (c.side==="sr"?" sr":"");
+        if(it.matched.includes(idx)) cls+=" matched";
+        if(it.sel.includes(idx)) cls+=" sel";
+        if(it.miss && it.miss.includes(idx)) cls+=" miss";
+        const disp = c.side==="sr" ? showText(c.text) : c.text;
+        return `<button class="${cls}" onclick="sessPair(${idx})">${disp}</button>`;
+      }).join("")}
+    </div>`;
+}
+function renderSessBuild(it){
+  const done = it.chosen.length===it.tokens.length;
+  return `
+    <div class="q-prompt"><div class="q-sub">Bau den Satz</div><div class="q-word" style="font-size:23px; line-height:1.3">${it.de}</div></div>
+    <div class="tray">${it.chosen.length ? it.chosen.map((pi,k)=>`<button class="wtile" ${it.locked?"":`onclick="sessBuildUndo(${k})"`}>${showText(it.pool[pi].t)}</button>`).join("") : '<span class="muted tiny">Tippe die Wörter in der richtigen Reihenfolge</span>'}</div>
+    <div class="tiles">${it.pool.map((p,i)=> (it.chosen.includes(i)||it.locked) ? "" : `<button class="wtile" onclick="sessBuildPick(${i})">${showText(p.t)}</button>`).join("")}</div>
+    ${it.fb?`<div class="sess-fb ${it.fbKind}">${it.fb}</div>`:(done&&!it.locked?`<button class="primary lg full" style="margin-top:16px" onclick="sessBuildCheck()">Prüfen</button>`:"")}`;
+}
+function renderSessType(it){
+  return `
+    <div class="q-prompt"><div class="q-sub">Tippe auf Serbisch</div><div class="q-word" style="font-size:30px">${it.promptText}</div></div>
+    <input class="typing-input" id="sxinp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="…" ${it.locked?"disabled":""} value="${jsStr(it.picked||'')}" onkeydown="if(event.key==='Enter')sessTypeCheck()"/>
+    ${it.fb?`<div class="sess-fb ${it.fbKind}">${it.fb}</div>`:`<button class="primary lg full" style="margin-top:14px" onclick="sessTypeCheck()">Prüfen</button>`}`;
+}
+function startSession(){ setView({type:'session'}); }
+
+/* ===========================================================
+   LERNZEIT-TIMER — tägliche 30-Min-Slots (Selbstverpflichtung)
+   Läuft nur während aktiver Session & sichtbarem Tab.
+   =========================================================== */
+function tickMinutes(){
+  const t = todayStr();
+  if(state.minutesDate !== t){ state.minutesToday = 0; state.minutesDate = t; save(); }
+}
+let _learnTimer = null, _learnSec = 0;
+function startLearnTimer(){
+  if(_learnTimer) return;
+  tickMinutes();
+  _learnTimer = setInterval(()=>{
+    if(document.hidden) return;
+    if(state.view.type !== "session") return;
+    _learnSec++;
+    if(_learnSec >= 60){
+      _learnSec = 0; tickMinutes();
+      state.minutesToday = (state.minutesToday||0) + 1; save();
+      refreshSessTime();
+      if(state.minutesToday === (state.dailyMinutesGoal||30)){
+        bumpStreak(); confettiBurst(); sfx("win");
+        toast("✅ 30-Min-Slot geschafft! 🔥","good");
+      }
+    }
+  }, 1000);
+}
+function stopLearnTimer(){ if(_learnTimer){ clearInterval(_learnTimer); _learnTimer = null; _learnSec = 0; } }
+function refreshSessTime(){
+  const mins = state.minutesToday||0, goal = state.dailyMinutesGoal||30;
+  const f = document.getElementById("sessMinFill"); if(f) f.style.width = Math.min(100,Math.round(mins/goal*100))+"%";
+  const t = document.getElementById("sessMin"); if(t) t.textContent = mins+"/"+goal+"m";
+}
+
+/* --- Slot-Verwaltung --- */
+function editSlot(){
+  const t = prompt("Wann ist dein täglicher Serbisch-Slot? (HH:MM)", state.slotTime||"19:00");
+  if(t && /^\d{1,2}:\d{2}$/.test(t.trim())){ state.slotTime = t.trim(); save(); render(); toast("Slot gespeichert ⏰","good"); }
+}
+function downloadSlotIcs(){
+  const [hh,mm] = (state.slotTime||"19:00").split(":");
+  const now = new Date();
+  const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+  const start = `${y}${m}${d}T${String(hh).padStart(2,'0')}${mm}00`;
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SrpskiStudio//Slot//DE","CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT","UID:srpski-slot-"+Date.now()+"@kaito","SUMMARY:🇷🇸 Serbisch lernen (30 Min)",
+    `DTSTART;TZID=Europe/Zurich:${start}`,"DURATION:PT30M","RRULE:FREQ=DAILY",
+    "DESCRIPTION:Täglicher 30-Minuten-Slot. Dranbleiben! 🍺","BEGIN:VALARM","TRIGGER:PT0M","ACTION:DISPLAY","DESCRIPTION:Vreme je! Serbisch lernen","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const blob = new Blob([ics], {type:"text/calendar"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "serbisch-slot.ics"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  toast("Kalendereintrag geladen 📅","good");
+}
+
+/* ===========================================================
+   MEHR-TAB — alle weiteren Modi & Inhalte (entrümpelt)
+   =========================================================== */
+function renderMoreTab(){
+  const tiles = [
+    {ico:"📚", ttl:"Kurs & Wörter", sub:`42-Tage-Plan · Tag ${state.currentDay}`, go:"setTab('learn')"},
+    {ico:"⚡", ttl:"Übungs-Modi", sub:"Speed, Match, Diktat …", go:"setTab('practice')"},
+    {ico:"💬", ttl:"Dialoge", sub:"Stammtisch-Gespräche", go:"setTab('dialogues')"},
+    {ico:"📖", ttl:"Storys", sub:"Lesen mit Kontext", go:"setView({type:'stories'})"},
+    {ico:"🔠", ttl:"Wortliste", sub:"Alle Vokabeln & Suche", go:"setView({type:'wordlib'})"},
+    {ico:"🧠", ttl:"Smart Review", sub:`${srsDueCount()} fällig`, go:"setView({type:'srs'})"},
+    {ico:"🏆", ttl:"Profil & Statistik", sub:`${state.xp} XP · ${state.streak} Streak`, go:"setTab('profile')"},
+    {ico:"📊", ttl:"Coverage", sub:"Wie viel Alltag schon?", go:"setView({type:'coverage'})"},
+    {ico:"🔬", ttl:"Methodik", sub:"Wie diese App lernt", go:"setView({type:'methodik'})"},
+    {ico:"⚙", ttl:"Einstellungen", sub:"Theme, Stimme, Reset", go:"openSettings()"},
+  ];
+  $("#app").innerHTML = `
+    <section class="section">
+      <div class="section-head"><div class="lead"><h1>⋯ Mehr</h1><small>Alle Modi & Inhalte</small></div></div>
+      <div class="grid auto-220">
+        ${tiles.map(t=>`
+          <button class="tile glow" onclick="${t.go}">
+            <div class="icon">${t.ico}</div>
+            <div class="ttl">${t.ttl}</div>
+            <div class="sub">${t.sub}</div>
+          </button>`).join("")}
+      </div>
+      <p class="foot-credit">Srpski Studio · Mit Liebe für gute Pivo-Pausen 🍺</p>
+    </section>`;
 }
 
 /* ===========================================================
