@@ -2926,7 +2926,9 @@ const defaultState = {
   dailyMinutesGoal:30,   // tägliches Lernzeit-Ziel in Minuten
   minutesToday:0,        // heute aktiv gelernte Minuten
   minutesDate:null,      // "y-m-d" für täglichen Reset
-  slotTime:"19:00"       // fixer täglicher Lern-Slot (Selbstverpflichtung)
+  slotTime:"19:00",      // fixer täglicher Lern-Slot (Selbstverpflichtung)
+  chapterMinutes:5,      // Länge eines Lern-Kapitels in Min (5-Min-Häppchen statt 30er-Block)
+  skipListening:false    // Hör-Aufgaben überspringen (z.B. wenn man gerade nicht hören kann)
 };
 function load(){
   try{
@@ -3589,7 +3591,7 @@ function renderHomeTab(){
       <button class="start-btn" onclick="startSession()">
         <span class="sb-ico">▶</span>
         <span class="sb-main">Los geht's</span>
-        <span class="sb-sub">${dueN>0?`${dueN} fällig · `:""}${set?`Tag ${state.currentDay} · `:""}gemischte Übung</span>
+        <span class="sb-sub">${dueN>0?`${dueN} fällig · `:""}${set?`Tag ${state.currentDay} · `:""}${(state.chapterMinutes||5)<30?`${state.chapterMinutes||5}-Min-Kapitel`:"gemischte Übung"}</span>
       </button>
 
       <div class="hs-slot">⏰ Dein Slot: <b>${state.slotTime||"19:00"}</b> · <a class="more tiny" onclick="editSlot()">ändern</a> · <a class="more tiny" onclick="downloadSlotIcs()">📅 in Kalender</a></div>
@@ -6102,6 +6104,30 @@ function openSettings(){
     </div>
 
     <div class="divider"></div>
+    <h3 style="margin:14px 0 8px; font-size:14px">Kapitel &amp; Hören</h3>
+
+    <div class="row between center" style="margin:10px 0">
+      <div>
+        <div style="font-weight:600">Kapitel-Länge</div>
+        <div class="muted tiny">Kurze Häppchen mit Pause statt einem 30-Min-Block</div>
+      </div>
+      <select onchange="state.chapterMinutes=parseInt(this.value); save()" style="padding:6px 10px; border-radius:8px; background:var(--surface-2); color:var(--text); border:1px solid var(--border-strong)">
+        <option value="3"  ${state.chapterMinutes===3?'selected':''}>3 Min</option>
+        <option value="5"  ${state.chapterMinutes===5?'selected':''}>5 Min</option>
+        <option value="10" ${state.chapterMinutes===10?'selected':''}>10 Min</option>
+        <option value="30" ${state.chapterMinutes===30?'selected':''}>Kein Limit</option>
+      </select>
+    </div>
+
+    <div class="row between center" style="margin:10px 0">
+      <div>
+        <div style="font-weight:600">Hör-Aufgaben</div>
+        <div class="muted tiny">Aus, wenn du gerade nicht hören kannst</div>
+      </div>
+      <button class="${!state.skipListening?'primary':''}" onclick="state.skipListening=!state.skipListening; save(); openSettings()">${state.skipListening?'Aus':'An'}</button>
+    </div>
+
+    <div class="divider"></div>
     <h3 style="margin:14px 0 8px; font-size:14px">🔬 Wissenschafts-Optimierungen</h3>
 
     <div class="row between center" style="margin:10px 0">
@@ -6250,19 +6276,24 @@ function deDistractors(w,n){ return shuffle(TOP_WORDS.filter(x=>x.de!==w.de)).sl
 function srDistractors(w,n){ return shuffle(TOP_WORDS.filter(x=>x.sr!==w.sr)).slice(0,n).map(x=>x.sr); }
 
 /* nächstes Einzelwort: erst fällige Reviews, dann neue Tageswörter, dann unbekannte Top-Wörter */
+/* Anti-Wiederholung: dieselben Basis-Wörter (zdravo/hvala/dobar dan…)
+   nicht direkt hintereinander zeigen. Merkt sich die letzten paar. */
+let _recentSrs = [];
+function _notRecent(arr){ const f = arr.filter(w=>w&&!_recentSrs.includes(w.sr)); return f.length ? f : arr; }
+function _markRecent(w){ if(!w||!w.sr) return; _recentSrs.push(w.sr); if(_recentSrs.length>6) _recentSrs.shift(); }
 function nextWordForSession(){
   const due = srsDueWords();
-  if(due.length) return {w: pickN(due,1)[0], isNew:false};
+  if(due.length){ const w=pickN(_notRecent(due),1)[0]; _markRecent(w); return {w, isNew:false}; }
   const set = getSet(state.currentDay);
   if(set){
     for(const sr of set.new){
       const w = findWordBySr(sr);
-      if(!w._missing && !state.fsrs[w.sr] && !state.srs[w.sr]) return {w, isNew:true};
+      if(!w._missing && !state.fsrs[w.sr] && !state.srs[w.sr]){ _markRecent(w); return {w, isNew:true}; }
     }
   }
   const unknown = TOP_WORDS.filter(w=>!isWordKnown(w.sr));
-  if(unknown.length) return {w: pickN(unknown,1)[0], isNew:false};
-  return {w: pickN(TOP_WORDS,1)[0], isNew:false};
+  if(unknown.length){ const w=pickN(_notRecent(unknown),1)[0]; _markRecent(w); return {w, isNew:false}; }
+  const w = pickN(_notRecent(TOP_WORDS),1)[0]; _markRecent(w); return {w, isNew:false};
 }
 function mcOptions(w, dir){
   if(dir==="sr2de"){
@@ -6298,7 +6329,7 @@ function buildSessionItem(){
   const w = pick.w;
   if(pick.isNew) return Object.assign({kind:"mc", dir:"sr2de", w, phase:"intro"}, mcOptions(w,"sr2de"));
   const r = n%5;
-  if(r===1) return Object.assign({kind:"listen", w, phase:"q"}, mcOptions(w,"sr2de"));
+  if(r===1 && !state.skipListening) return Object.assign({kind:"listen", w, phase:"q"}, mcOptions(w,"sr2de"));
   if(r===4) return buildTypeItem(w);
   const dir = (r===0||r===3) ? "de2sr" : "sr2de";
   return Object.assign({kind:"mc", dir, w, phase:"q"}, mcOptions(w,dir));
@@ -6415,7 +6446,8 @@ function sessEnd(force){
 /* --- Render: Session-Container + Item --- */
 function renderSession(){
   if(!sessionState){
-    sessionState = {combo:0, best:0, xpGained:0, answered:0, item:null};
+    sessionState = {combo:0, best:0, xpGained:0, answered:0, item:null,
+                    chapterBaseMin:(state.minutesToday||0), chapterBreak:false};
     sessionState.item = buildSessionItem();
   }
   startLearnTimer();
@@ -6429,7 +6461,8 @@ function renderSession(){
       <span class="sess-combo">🔥 ${sessionState.combo}</span>
     </div>`;
   let body = "";
-  if(!it){ body = `<div class="card elev center" style="padding:30px"><div style="font-size:46px">🎉</div><h2>Alles wiederholt!</h2><button class="primary" style="margin-top:12px" onclick="sessNext()">Weiter</button></div>`; }
+  if(sessionState.chapterBreak){ body = renderSessChapterBreak(); }
+  else if(!it){ body = `<div class="card elev center" style="padding:30px"><div style="font-size:46px">🎉</div><h2>Alles wiederholt!</h2><button class="primary" style="margin-top:12px" onclick="sessNext()">Weiter</button></div>`; }
   else if(it.kind==="mc" && it.phase==="intro") body = renderSessIntro(it);
   else if(it.kind==="mc")     body = renderSessMc(it);
   else if(it.kind==="listen") body = renderSessListen(it);
@@ -6437,9 +6470,35 @@ function renderSession(){
   else if(it.kind==="build")  body = renderSessBuild(it);
   else if(it.kind==="type")   body = renderSessType(it);
   $("#app").innerHTML = `<div class="session">${top}${body}</div>`;
-  if(it && it.phase==="intro" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
-  if(it && it.kind==="listen" && it.phase==="q" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
-  if(it && it.kind==="type" && !it.locked){ const i=document.getElementById("sxinp"); if(i) i.focus(); }
+  if(!sessionState.chapterBreak){
+    if(it && it.phase==="intro" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
+    if(it && it.kind==="listen" && it.phase==="q" && !it._spoke){ it._spoke=true; setTimeout(()=>speak(it.w.sr),250); }
+    if(it && it.kind==="type" && !it.locked){ const i=document.getElementById("sxinp"); if(i) i.focus(); }
+  }
+}
+function renderSessChapterBreak(){
+  const chLen = state.chapterMinutes||5;
+  const goal  = state.dailyMinutesGoal||30;
+  const mins  = state.minutesToday||0;
+  const chDone  = Math.max(1, Math.round(mins/chLen));
+  const chTotal = Math.max(1, Math.round(goal/chLen));
+  const goalReached = mins>=goal;
+  return `
+    <div class="card elev center" style="padding:30px; margin-top:20px">
+      <div style="font-size:46px">${goalReached?'🏆':'☕'}</div>
+      <h2 style="margin-top:6px">${goalReached?'Tagesziel geschafft!':`Kapitel ${chDone} geschafft!`}</h2>
+      <p class="muted" style="margin:8px 0 4px">${chLen} Minuten am Stück — bravo.${goalReached?'':' Kurz durchatmen, dann weiter? 🍺'}</p>
+      <div class="sess-prog" style="margin:14px 0"><i style="width:${Math.min(100,Math.round(mins/goal*100))}%"></i></div>
+      <div class="muted tiny" style="margin-bottom:16px">${mins}/${goal} Min · Kapitel ${Math.min(chDone,chTotal)}/${chTotal}</div>
+      <button class="primary lg full" onclick="chapterContinue()">${goalReached?'Noch ein Kapitel 💪':`Nächstes Kapitel (${chLen} Min) →`}</button>
+      <button class="ghost full" style="margin-top:8px" onclick="sessEnd(true)">${goalReached?'Fertig für heute ✓':'Pause machen'}</button>
+    </div>`;
+}
+function chapterContinue(){
+  if(!sessionState) return;
+  sessionState.chapterBreak = false;
+  sessionState.chapterBaseMin = state.minutesToday||0;
+  sessNext();
 }
 function renderSessIntro(it){
   return `
@@ -6535,9 +6594,18 @@ function startLearnTimer(){
       _learnSec = 0; tickMinutes();
       state.minutesToday = (state.minutesToday||0) + 1; save();
       refreshSessTime();
-      if(state.minutesToday === (state.dailyMinutesGoal||30)){
+      const goalNow = (state.dailyMinutesGoal||30);
+      if(state.minutesToday === goalNow){
         bumpStreak(); confettiBurst(); sfx("win");
-        toast("✅ 30-Min-Slot geschafft! 🔥","good");
+        toast(`✅ ${goalNow}-Min-Slot geschafft! 🔥`,"good");
+      }
+      // 5-Min-Kapitel: nach jedem Kapitel kurzer Checkpoint + Pause-Option
+      const chLen = state.chapterMinutes||0;
+      if(sessionState && !sessionState.chapterBreak && chLen>0 &&
+         (state.minutesToday - (sessionState.chapterBaseMin||0)) >= chLen){
+        sessionState.chapterBreak = true;
+        if(state.minutesToday < goalNow) sfx("win");
+        if(state.view.type==="session") renderSession();
       }
     }
   }, 1000);
