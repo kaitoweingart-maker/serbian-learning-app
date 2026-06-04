@@ -1,5 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="80" fill="#1a5276"/>
-  <text x="256" y="200" text-anchor="middle" font-family="-apple-system,Arial,sans-serif" font-size="120" font-weight="800" fill="rgba(255,255,255,0.3)">LEARN</text>
-  <text x="256" y="370" text-anchor="middle" font-family="-apple-system,Arial,sans-serif" font-size="200" font-weight="800" fill="white">SR</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d0712"/>
+      <stop offset="1" stop-color="#4a0e20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#962840" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#962840" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <circle cx="256" cy="230" r="154" fill="none" stroke="#deba74" stroke-width="8"/>
+  <circle cx="256" cy="230" r="140" fill="none" stroke="#deba74" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="256" y="232" text-anchor="middle" dominant-baseline="central" font-family="Georgia, 'Times New Roman', serif" font-size="240" font-weight="700" fill="#f5e9d0">&#1057;</text>
+  <rect x="178" y="410" width="49" height="23" rx="6" fill="#c6363c"/>
+  <rect x="231" y="410" width="49" height="23" rx="6" fill="#28468c"/>
+  <rect x="284" y="410" width="50" height="23" rx="6" fill="#eeeeee"/>
 </svg>
