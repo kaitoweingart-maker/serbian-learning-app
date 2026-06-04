@@ -3663,7 +3663,7 @@ function renderHomeTab(){
       <button class="start-btn" onclick="startSession()">
         <span class="sb-ico">▶</span>
         <span class="sb-main">Los geht's</span>
-        <span class="sb-sub">${dueN>0?`${dueN} fällig · `:""}${set?`Tag ${state.currentDay} · `:""}${(state.chapterMinutes||5)<30?`${state.chapterMinutes||5}-Min-Kapitel`:"gemischte Übung"}</span>
+        <span class="sb-sub">${dueN>0?`${dueN} fällig · `:""}${set?`Tag ${state.currentDay} · `:""}${chapterGoalPoints()>0?`Kapitel bis ${chapterGoalPoints()} Punkte`:"gemischte Übung"}</span>
       </button>
 
       <div class="hs-slot">⏰ Dein Slot: <b>${state.slotTime||"19:00"}</b> · <a class="more tiny" onclick="editSlot()">ändern</a> · <a class="more tiny" onclick="downloadSlotIcs()">📅 in Kalender</a></div>
@@ -6181,12 +6181,12 @@ function openSettings(){
     <div class="row between center" style="margin:10px 0">
       <div>
         <div style="font-weight:600">Kapitel-Länge</div>
-        <div class="muted tiny">Kurze Häppchen mit Pause statt einem 30-Min-Block</div>
+        <div class="muted tiny">Checkpoint nach einigen Aufgaben (richtig zählt doppelt)</div>
       </div>
       <select onchange="state.chapterMinutes=parseInt(this.value); save()" style="padding:6px 10px; border-radius:8px; background:var(--surface-2); color:var(--text); border:1px solid var(--border-strong)">
-        <option value="3"  ${state.chapterMinutes===3?'selected':''}>3 Min</option>
-        <option value="5"  ${state.chapterMinutes===5?'selected':''}>5 Min</option>
-        <option value="10" ${state.chapterMinutes===10?'selected':''}>10 Min</option>
+        <option value="3"  ${state.chapterMinutes===3?'selected':''}>Kurz (12)</option>
+        <option value="5"  ${state.chapterMinutes===5?'selected':''}>Mittel (20)</option>
+        <option value="10" ${state.chapterMinutes===10?'selected':''}>Lang (40)</option>
         <option value="30" ${state.chapterMinutes===30?'selected':''}>Kein Limit</option>
       </select>
     </div>
@@ -6407,6 +6407,13 @@ function buildSessionItem(){
   return Object.assign({kind:"mc", dir, w, phase:"q"}, mcOptions(w,dir));
 }
 
+/* Kapitel-Ziel in Punkten (richtig=2, falsch=1):
+   "Kurz"=12, "Mittel"=20, "Lang"=40, "Kein Limit"=0 (kein Stopp).
+   So steigt der Balken, je länger UND je mehr man richtig macht. */
+function chapterGoalPoints(){
+  const m = state.chapterMinutes||5;
+  return m>=30 ? 0 : m*4;
+}
 /* --- Bewertung: speist FSRS, XP, Combo, Streak --- */
 function gradeSession(w, correct){
   if(w && w.sr) srsRecord(w.sr, correct?4:0);
@@ -6424,13 +6431,30 @@ function gradeSession(w, correct){
   }
   sessionState.answered++;
   if(sessionState.answered === 1) bumpStreak();
+  // Kapitel-Fortschritt: Aufgaben zählen, richtige Antworten doppelt
+  sessionState.chAnswered = (sessionState.chAnswered||0) + 1;
+  if(correct) sessionState.chCorrect = (sessionState.chCorrect||0) + 1;
+  sessionState.chPoints = (sessionState.chPoints||0) + (correct?2:1);
+  const _chGoal = chapterGoalPoints();
+  if(_chGoal>0 && !sessionState.chapterBreak && sessionState.chPoints >= _chGoal){
+    sessionState.pendingBreak = true;  // erst Feedback zeigen, dann beim nächsten Schritt Checkpoint
+  }
   save();
 }
 function scheduleAdvance(ms){
   clearTimeout(_advTimer);
   _advTimer = setTimeout(()=>{ if(state.view.type==="session") sessNext(); }, ms);
 }
-function sessNext(){ sessionState.item = buildSessionItem(); render(); }
+function sessNext(){
+  if(sessionState.pendingBreak){
+    sessionState.pendingBreak = false;
+    sessionState.chaptersDone = (sessionState.chaptersDone||0) + 1;
+    sessionState.chapterBreak = true;
+    sfx("win");
+    render(); return;
+  }
+  sessionState.item = buildSessionItem(); render();
+}
 function introContinue(){ sessionState.item.phase = "q"; render(); }
 
 /* --- Antwort-Handler --- */
@@ -6519,17 +6543,21 @@ function sessEnd(force){
 function renderSession(){
   if(!sessionState){
     sessionState = {combo:0, best:0, xpGained:0, answered:0, item:null,
+                    chPoints:0, chAnswered:0, chCorrect:0, chaptersDone:0,
                     chapterBaseMin:(state.minutesToday||0), chapterBreak:false};
     sessionState.item = buildSessionItem();
   }
   startLearnTimer();
   const it = sessionState.item;
-  const mins = state.minutesToday||0, goal = state.dailyMinutesGoal||30;
+  const chGoal = chapterGoalPoints();
+  const chPts  = sessionState.chPoints||0;
+  const barPct = chGoal>0 ? Math.min(100,Math.round(chPts/chGoal*100))
+                          : Math.min(100,Math.round(chPts/40*100));
   const top = `
     <div class="session-top">
       <button class="icon-btn" onclick="sessEnd(false)" aria-label="Schliessen">✕</button>
-      <div class="sess-prog"><i id="sessMinFill" style="width:${Math.min(100,Math.round(mins/goal*100))}%"></i></div>
-      <span class="sess-min" id="sessMin">${mins}/${goal}m</span>
+      <div class="sess-prog"><i id="sessProgFill" style="width:${barPct}%"></i></div>
+      <span class="sess-min" id="sessProgLbl">${chGoal>0?`★ ${chPts}/${chGoal}`:`★ ${chPts}`}</span>
       <span class="sess-combo">🔥 ${sessionState.combo}</span>
     </div>`;
   let body = "";
@@ -6549,26 +6577,28 @@ function renderSession(){
   }
 }
 function renderSessChapterBreak(){
-  const chLen = state.chapterMinutes||5;
   const goal  = state.dailyMinutesGoal||30;
   const mins  = state.minutesToday||0;
-  const chDone  = Math.max(1, Math.round(mins/chLen));
-  const chTotal = Math.max(1, Math.round(goal/chLen));
   const goalReached = mins>=goal;
+  const corr = (sessionState&&sessionState.chCorrect)||0;
+  const ans  = (sessionState&&sessionState.chAnswered)||0;
+  const acc  = ans ? Math.round(corr/ans*100) : 0;
+  const chDone = (sessionState&&sessionState.chaptersDone)||1;
   return `
     <div class="card elev center" style="padding:30px; margin-top:20px">
       <div style="font-size:46px">${goalReached?'🏆':'☕'}</div>
       <h2 style="margin-top:6px">${goalReached?'Tagesziel geschafft!':`Kapitel ${chDone} geschafft!`}</h2>
-      <p class="muted" style="margin:8px 0 4px">${chLen} Minuten am Stück — bravo.${goalReached?'':' Kurz durchatmen, dann weiter? 🍺'}</p>
+      <p class="muted" style="margin:8px 0 4px"><b>${corr}</b> von <b>${ans}</b> richtig${acc?` · ${acc}%`:''} — bravo.${goalReached?'':' Kurz durchatmen, dann weiter? 🍺'}</p>
       <div class="sess-prog" style="margin:14px 0"><i style="width:${Math.min(100,Math.round(mins/goal*100))}%"></i></div>
-      <div class="muted tiny" style="margin-bottom:16px">${mins}/${goal} Min · Kapitel ${Math.min(chDone,chTotal)}/${chTotal}</div>
-      <button class="primary lg full" onclick="chapterContinue()">${goalReached?'Noch ein Kapitel 💪':`Nächstes Kapitel (${chLen} Min) →`}</button>
+      <div class="muted tiny" style="margin-bottom:16px">Tagesziel: ${mins}/${goal} Min</div>
+      <button class="primary lg full" onclick="chapterContinue()">${goalReached?'Noch ein Kapitel 💪':`Nächstes Kapitel →`}</button>
       <button class="ghost full" style="margin-top:8px" onclick="sessEnd(true)">${goalReached?'Fertig für heute ✓':'Pause machen'}</button>
     </div>`;
 }
 function chapterContinue(){
   if(!sessionState) return;
   sessionState.chapterBreak = false;
+  sessionState.chPoints = 0; sessionState.chAnswered = 0; sessionState.chCorrect = 0;
   sessionState.chapterBaseMin = state.minutesToday||0;
   sessNext();
 }
@@ -6671,14 +6701,7 @@ function startLearnTimer(){
         bumpStreak(); confettiBurst(); sfx("win");
         toast(`✅ ${goalNow}-Min-Slot geschafft! 🔥`,"good");
       }
-      // 5-Min-Kapitel: nach jedem Kapitel kurzer Checkpoint + Pause-Option
-      const chLen = state.chapterMinutes||0;
-      if(sessionState && !sessionState.chapterBreak && chLen>0 &&
-         (state.minutesToday - (sessionState.chapterBaseMin||0)) >= chLen){
-        sessionState.chapterBreak = true;
-        if(state.minutesToday < goalNow) sfx("win");
-        if(state.view.type==="session") renderSession();
-      }
+      // Kapitel-Checkpoint läuft jetzt aufgabenbasiert (siehe gradeSession), nicht mehr per Minute.
     }
   }, 1000);
 }
