@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0612">
 <title>Srpski Studio – Serbisch lernen</title>
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
+<link id="appleIcon" rel="apple-touch-icon" href="apple-touch-s0.png?v=3">
+<link id="favIcon" rel="icon" type="image/png" sizes="32x32" href="favicon-s0.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="char-192.png?v=3">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -907,6 +907,21 @@ html[data-theme="light"] .tabbar{
 .home-simple{max-width:480px; margin:0 auto; padding:14px 0 50px; text-align:center}
 .hs-greet{font-size:22px; font-weight:800; letter-spacing:-.01em; margin-top:8px}
 .hs-chips{display:flex; gap:8px; justify-content:center; margin-top:12px}
+.serb-char-card{display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer;
+  margin:16px auto 4px; padding:12px 14px; max-width:360px;
+  background:var(--surface,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.10));
+  border-radius:18px; transition:transform .15s, border-color .15s}
+.serb-char-card:hover{transform:translateY(-1px); border-color:var(--border-strong,rgba(255,255,255,.22))}
+.scc-imgwrap{flex:0 0 auto; width:64px; height:64px; border-radius:16px; overflow:hidden;
+  box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.scc-img{width:64px; height:64px; display:block; object-fit:cover}
+.scc-info{flex:1 1 auto; min-width:0}
+.scc-title{font-size:16px; line-height:1.1}
+.scc-title b{font-weight:800} .scc-title span{font-size:12px; color:var(--text-2); margin-left:6px}
+.scc-bar{height:7px; border-radius:6px; background:rgba(255,255,255,.12); margin:7px 0 5px; overflow:hidden}
+.scc-bar span{display:block; height:100%; border-radius:6px;
+  background:linear-gradient(90deg,#c6363c,#28468c 55%,#e9e9e9)}
+.scc-sub{font-size:11.5px; color:var(--text-2)}
 .min-ring-wrap{display:grid; place-items:center; margin:30px 0 16px}
 .ring.big .ring-content b{font-size:48px; font-weight:900}
 .ring.big .ring-content small{font-size:12px; margin-top:7px; letter-spacing:.04em; text-transform:none}
@@ -3189,6 +3204,52 @@ function coverageStats(){
   return { knownTop:known, totalTop:N, coveragePct, totalKnown, dueNow, matureCards, youngCards };
 }
 
+/* === Serbischer Charakter: wird mit jedem gelernten Wort "serbischer" ===
+   Stufe basiert auf gefestigten Wörtern (coverageStats().totalKnown). */
+const SERB_STAGES = [
+  { min:0,   sr:"Турист",   de:"Tourist",   note:"Erste Schritte – ein freundliches Gesicht." },
+  { min:5,   sr:"Почетник", de:"Anfänger",  note:"Kyrillisch entdeckt – das Buch ist da." },
+  { min:25,  sr:"Ђак",      de:"Schüler",   note:"Die šajkača sitzt." },
+  { min:60,  sr:"Комшија",  de:"Nachbar",   note:"Trikolore um den Hals." },
+  { min:120, sr:"Домаћин",  de:"Gastgeber", note:"Schnurrbart & Rakija – echter Domaćin." },
+  { min:200, sr:"Мајстор",  de:"Meister",   note:"Goldrahmen & Adler – serbischer Mајstor!" }
+];
+function serbStageInfo(){
+  const known = coverageStats().totalKnown;
+  let idx = 0;
+  for(let i=0;i<SERB_STAGES.length;i++){ if(known >= SERB_STAGES[i].min) idx = i; }
+  const cur = SERB_STAGES[idx];
+  const next = SERB_STAGES[idx+1] || null;
+  const toNext = next ? Math.max(0, next.min - known) : 0;
+  const span = next ? (next.min - cur.min) : 1;
+  const pct = next ? Math.min(100, Math.round((known - cur.min)/span*100)) : 100;
+  return { idx, cur, next, known, toNext, pct };
+}
+function updateAppIcon(idx){
+  try{
+    if(idx==null) idx = serbStageInfo().idx;
+    const a=document.getElementById("appleIcon"); if(a) a.href = "apple-touch-s"+idx+".png?v=3";
+    const f=document.getElementById("favIcon");   if(f) f.href = "favicon-s"+idx+".png?v=3";
+  }catch(e){}
+}
+function serbCharCardHTML(){
+  const s = serbStageInfo();
+  const sub = s.next
+    ? `Noch <b>${s.toNext}</b> ${s.toNext===1?"Wort":"Wörter"} bis <b>${s.next.sr}</b>`
+    : `Höchste Stufe erreicht – браво!`;
+  return `
+    <div class="serb-char-card" onclick="setTab('more')" title="${s.cur.note}">
+      <div class="scc-imgwrap">
+        <img class="scc-img" src="char-s${s.idx}.png?v=3" alt="${s.cur.de}" width="96" height="96">
+      </div>
+      <div class="scc-info">
+        <div class="scc-title"><b>${s.cur.sr}</b> <span>${s.cur.de}</span></div>
+        <div class="scc-bar"><span style="width:${s.pct}%"></span></div>
+        <div class="scc-sub">${sub}</div>
+      </div>
+    </div>`;
+}
+
 /* === Chunk-SRS (parallel zu Wort-SRS, gleiche Engine) === */
 function chunkRecord(id, q){
   const today = dayIdx();
@@ -3576,9 +3637,11 @@ function renderHomeTab(){
   const greet = greeting();
   const set = getSet(state.currentDay);
 
+  updateAppIcon();
   $("#app").innerHTML = `
     <section class="home-simple">
       <div class="hs-greet">${greet}, Kaito 👋</div>
+      ${serbCharCardHTML()}
       <div class="hs-chips">
         <span class="stat-chip streak ${state.streak>0?'alive':''}"><span class="ico">🔥</span><span class="num">${state.streak}</span></span>
         <span class="stat-chip xp"><span class="ico">⭐</span><span class="num">${state.xp}</span></span>
