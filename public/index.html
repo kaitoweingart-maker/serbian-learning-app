@@ -6352,7 +6352,22 @@ function srDistractors(w,n){ return shuffle(TOP_WORDS.filter(x=>x.sr!==w.sr)).sl
    nicht direkt hintereinander zeigen. Merkt sich die letzten paar. */
 let _recentSrs = [];
 function _notRecent(arr){ const f = arr.filter(w=>w&&!_recentSrs.includes(w.sr)); return f.length ? f : arr; }
-function _markRecent(w){ if(!w||!w.sr) return; _recentSrs.push(w.sr); if(_recentSrs.length>6) _recentSrs.shift(); }
+function _markRecent(w){ if(!w||!w.sr) return; _recentSrs.push(w.sr); if(_recentSrs.length>14) _recentSrs.shift(); }
+/* Tages-Fortschritt: schaltet im Schnell-Modus weiter, sobald alle neuen Wörter
+   eines Tages bekannt sind — sonst bleibt man auf Tag 1 (nur "Zdravo dobro sam hvala"). */
+function maybeAdvanceDay(){
+  let guard = 0;
+  while(state.currentDay <= LEARN_SETS.length && guard++ < 80){
+    const set = getSet(state.currentDay);
+    if(!set || !set.new || !set.new.length) break;
+    const allKnown = set.new.every(k=>{
+      const w = findWordBySr(k);
+      if(!w || w._missing) return true;   // Phrasen ohne eigenen Vokabel-Eintrag nicht als Blocker werten
+      return isWordKnown(w.sr);
+    });
+    if(allKnown) state.currentDay++; else break;
+  }
+}
 function nextWordForSession(){
   const due = srsDueWords();
   if(due.length){ const w=pickN(_notRecent(due),1)[0]; _markRecent(w); return {w, isNew:false}; }
@@ -6383,12 +6398,20 @@ function buildPairsItem(){
   words.forEach((w,i)=>{ cells.push({k:i,side:"sr",text:w.sr}); cells.push({k:i,side:"de",text:w.de}); });
   return {kind:"pairs", phase:"q", words, cells:shuffle(cells), sel:[], matched:[], miss:null};
 }
+let _recentSent = [];
 function buildSentenceItem(){
-  const maxDay = Math.min(state.currentDay, LEARN_SETS.length);
-  const cands = LEARN_SETS.slice(0, Math.max(1,maxDay))
+  // Reichweite wächst mit gelernten Wörtern (min. 4 Tage), nicht nur currentDay →
+  // verhindert, dass ewig derselbe Tag-1-Satz "Zdravo dobro sam hvala" kommt.
+  const reach = Math.min(LEARN_SETS.length,
+                  Math.max(state.currentDay||1, 4, Math.floor(coverageStats().totalKnown/3)));
+  let cands = LEARN_SETS.slice(0, reach)
     .filter(s=>s.build && s.build.sr && s.build.sr.split(/\s+/).length>=2 && s.build.sr.split(/\s+/).length<=7);
   if(!cands.length) return null;
+  // zuletzt gezeigte Sätze meiden
+  const fresh = cands.filter(s=>!_recentSent.includes(s.build.sr));
+  if(fresh.length) cands = fresh;
   const set = cands[Math.floor(Math.random()*cands.length)];
+  _recentSent.push(set.build.sr); if(_recentSent.length>6) _recentSent.shift();
   const tokens = set.build.sr.split(/\s+/);
   return {kind:"build", phase:"q", de:set.build.de, sr:set.build.sr, tokens,
           pool: shuffle(tokens.map(t=>({t}))), chosen:[]};
@@ -6431,6 +6454,7 @@ function gradeSession(w, correct){
   }
   sessionState.answered++;
   if(sessionState.answered === 1) bumpStreak();
+  if(correct) maybeAdvanceDay();  // gelernte Tage freischalten → mehr Wort-/Satz-Variation
   // Kapitel-Fortschritt: Aufgaben zählen, richtige Antworten doppelt
   sessionState.chAnswered = (sessionState.chAnswered||0) + 1;
   if(correct) sessionState.chCorrect = (sessionState.chCorrect||0) + 1;
