@@ -1,4 +1,4 @@
-const CACHE = 'serbian-v1';
+const CACHE = 'serbian-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
@@ -16,6 +16,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Sync-API-Calls und Non-GET nie cachen
+  if (e.request.method !== 'GET' || !e.request.url.startsWith(self.location.origin)) return;
   e.respondWith(
     fetch(e.request).then(res => {
       const clone = res.clone();
