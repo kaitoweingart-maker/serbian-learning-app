@@ -1,4 +1,4 @@
-const CACHE = 'serbian-v3';
+const CACHE = 'serbian-v4';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
