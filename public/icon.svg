@@ -1,20 +1,51 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d0712"/>
-      <stop offset="1" stop-color="#4a0e20"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c1433"/>
+      <stop offset=".55" stop-color="#120c22"/>
+      <stop offset="1" stop-color="#0a0714"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="42%" r="62%">
-      <stop offset="0" stop-color="#962840" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#962840" stop-opacity="0"/>
+    <radialGradient id="glow" cx="52%" cy="44%" r="60%">
+      <stop offset="0" stop-color="#ff9d4d" stop-opacity=".32"/>
+      <stop offset=".6" stop-color="#ff7a5c" stop-opacity=".10"/>
+      <stop offset="1" stop-color="#ff7a5c" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="c" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd36a"/>
+      <stop offset=".45" stop-color="#ffb547"/>
+      <stop offset="1" stop-color="#ff5c47"/>
+    </linearGradient>
+    <linearGradient id="fl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd36a"/>
+      <stop offset="1" stop-color="#ff7a3d"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#ff6a3d" flood-opacity=".35"/>
+    </filter>
   </defs>
+
+  <!-- Hintergrund -->
   <rect width="512" height="512" fill="url(#bg)"/>
   <rect width="512" height="512" fill="url(#glow)"/>
-  <circle cx="256" cy="230" r="154" fill="none" stroke="#deba74" stroke-width="8"/>
-  <circle cx="256" cy="230" r="140" fill="none" stroke="#deba74" stroke-opacity="0.35" stroke-width="2"/>
-  <text x="256" y="232" text-anchor="middle" dominant-baseline="central" font-family="Georgia, 'Times New Roman', serif" font-size="240" font-weight="700" fill="#f5e9d0">&#1057;</text>
-  <rect x="178" y="410" width="49" height="23" rx="6" fill="#c6363c"/>
-  <rect x="231" y="410" width="49" height="23" rx="6" fill="#28468c"/>
-  <rect x="284" y="410" width="50" height="23" rx="6" fill="#eeeeee"/>
+
+  <!-- Das С (dicker Bogen, Öffnung rechts) -->
+  <g filter="url(#soft)">
+    <path d="M 343 336.6 A 130 130 0 1 1 343 143.4"
+          fill="none" stroke="url(#c)" stroke-width="72" stroke-linecap="round"/>
+  </g>
+
+  <!-- Flamme aus dem oberen Terminal -->
+  <path d="M347 56 C 374 92 388 114 384 141 C 381 164 362 179 341 179
+           C 350 165 352 152 344 141 C 334 153 316 152 310 136
+           C 303 117 321 95 347 56 Z" fill="url(#fl)"/>
+  <path d="M346 104 C 359 121 364 132 361 146 C 359 158 349 166 339 165
+           C 344 156 344 148 340 141 C 331 147 323 142 322 132
+           C 322 120 333 112 346 104 Z" fill="#ffedc9"/>
+
+  <!-- Serbische Trikolore -->
+  <g opacity=".95">
+    <rect x="181" y="430" width="48" height="20" rx="10" fill="#c6363c"/>
+    <rect x="235" y="430" width="48" height="20" rx="10" fill="#27418c"/>
+    <rect x="289" y="430" width="48" height="20" rx="10" fill="#e9e7e2"/>
+  </g>
 </svg>
