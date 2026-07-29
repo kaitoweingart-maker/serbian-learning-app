@@ -645,6 +645,23 @@ html[data-theme="light"] .tabbar{
 .heatmap-legend{display:flex; gap:6px; align-items:center; font-size:10px; color:var(--text-3); margin-top:8px; justify-content:flex-end}
 .heatmap-legend i{width:10px; height:10px; border-radius:2px; display:inline-block}
 
+/* Wochenleiste (Habit-Kalender wie Shred Tracker) */
+.week-strip{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; width:100%; max-width:340px; margin:10px auto 0}
+.ws-cell{aspect-ratio:1; border-radius:9px; background:var(--surface-2); border:1px solid var(--border-strong); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px}
+.ws-cell .dw{font-size:9px; color:var(--text-3); text-transform:uppercase}
+.ws-cell .dn{font-size:12px; font-weight:700}
+.ws-cell.hit{background:rgba(93,211,158,.18); border-color:rgba(93,211,158,.55)}
+.ws-cell.hit .dn{color:var(--good, #5dd39e)}
+.ws-cell.part{background:rgba(255,181,71,.16); border-color:rgba(255,181,71,.4)}
+.ws-cell.miss{background:rgba(255,122,92,.10); border-color:rgba(255,122,92,.3)}
+.ws-cell.future{opacity:.35}
+.ws-cell.today{outline:2px solid var(--accent); outline-offset:-2px}
+
+/* Sync */
+#syncDot{font-size:10px; margin-left:2px}
+.sync-ok{color:#5dd39e} .sync-busy{color:var(--accent)} .sync-err{color:#ff7a5c}
+.sync-code-box{font-family:monospace; font-size:13px; background:var(--surface-2); border:1px dashed var(--accent); border-radius:10px; padding:10px; text-align:center; user-select:all; word-break:break-all; margin:8px 0}
+
 /* ====================== ACHIEVEMENT GRID ====================== */
 .ach-card{
   background:var(--surface); border:1px solid var(--border); border-radius:14px;
@@ -992,6 +1009,7 @@ html[data-theme="light"] .tabbar{
   <div class="topbar-stats">
     <span class="stat-chip xp" id="chipXp" title="Erfahrungspunkte"><span class="ico">⭐</span><span class="num" id="xp">0</span></span>
     <span class="stat-chip streak" id="chipStreak" title="Tagesstreak"><span class="ico">🔥</span><span class="num" id="streak">0</span></span>
+    <span id="syncDot" title="Sync-Status"></span>
     <button class="icon-btn subtle" id="btnSettings" title="Einstellungen" aria-label="Einstellungen">⚙</button>
   </div>
 </header>
@@ -2952,7 +2970,8 @@ const defaultState = {
   minutesDate:null,      // "y-m-d" für täglichen Reset
   slotTime:"19:00",      // fixer täglicher Lern-Slot (Selbstverpflichtung)
   chapterMinutes:5,      // Länge eines Lern-Kapitels in Min (5-Min-Häppchen statt 30er-Block)
-  skipListening:false    // Hör-Aufgaben überspringen (z.B. wenn man gerade nicht hören kann)
+  skipListening:false,   // Hör-Aufgaben überspringen (z.B. wenn man gerade nicht hören kann)
+  minutesLog:{}          // "y-m-d" -> gelernte Minuten (Wochenleiste + Sync, wie Shred Tracker)
 };
 function load(){
   try{
@@ -2962,8 +2981,144 @@ function load(){
     return Object.assign(structuredClone(defaultState), s);
   }catch(e){ return structuredClone(defaultState); }
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} scheduleSyncPush(); }
 let state = load();
+
+/* ===========================================================
+   GERÄTE-SYNC — gleiches Backend & Trust-Modell wie der
+   Shred Tracker (privater Sync-Code = Auth, Blob pro Code).
+   =========================================================== */
+const SYNC_API = "https://amanthos-group-booking.onrender.com";
+const SYNC_KEY_LS = "srpski-sync-key";
+let syncKey = localStorage.getItem(SYNC_KEY_LS) || "";
+let _syncTimer = null;
+
+function setSyncDot(cls, txt, title){
+  const el = document.getElementById("syncDot");
+  if(!el) return;
+  el.className = cls; el.textContent = txt;
+  el.title = title || "Sync-Status";
+}
+
+function genSyncCode(){
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
+  let c = "srpski-";
+  crypto.getRandomValues(new Uint8Array(18)).forEach(b => c += chars[b % chars.length]);
+  return c;
+}
+
+function _mergeMaxMap(local, remote){
+  const out = Object.assign({}, local);
+  for(const k in (remote||{})) out[k] = Math.max(out[k]||0, remote[k]||0);
+  return out;
+}
+
+function mergeRemoteState(r){
+  // Feldweises Mergen statt Last-write-wins: kein Gerät verliert Fortschritt.
+  if(!r || typeof r !== "object") return;
+  const s = state;
+  ["xp","streak","unlockedLevel","currentDay","bestSpeed","matchWins","diktatHits"].forEach(k => {
+    s[k] = Math.max(s[k]||0, r[k]||0);
+  });
+  s.activity   = _mergeMaxMap(s.activity, r.activity);
+  s.minutesLog = _mergeMaxMap(s.minutesLog||{}, r.minutesLog);
+  s.knownCount = _mergeMaxMap(s.knownCount, r.knownCount);
+  s.achievements  = [...new Set([...(s.achievements||[]), ...(r.achievements||[])])];
+  s.dialoguesDone = [...new Set([...(s.dialoguesDone||[]), ...(r.dialoguesDone||[])])];
+  for(const id in (r.completed||{})) s.completed[id] = Object.assign({}, r.completed[id], s.completed[id]);
+  for(const d in (r.setProgress||{})){
+    const cnt = o => o ? ["newDone","speakDone","buildDone"].filter(k=>o[k]).length : 0;
+    if(cnt(r.setProgress[d]) > cnt(s.setProgress[d])) s.setProgress[d] = r.setProgress[d];
+  }
+  ["srs","fsrs","chunkSrs"].forEach(f => {
+    for(const w in (r[f]||{})){
+      const lc = s[f][w], rc = r[f][w];
+      if(!lc || (rc.reps||0) > (lc.reps||0) || ((rc.reps||0)===(lc.reps||0) && (rc.due||0) > (lc.due||0))) s[f][w] = rc;
+    }
+  });
+  ["chunksDone","mnemUsage","topProgress","storiesDone","coverageHistory","preTestDone","mnemUserNotes"].forEach(f => {
+    s[f] = Object.assign({}, r[f], s[f]);
+  });
+  if((r.lastSetDate||"") > (s.lastSetDate||"")) s.lastSetDate = r.lastSetDate;
+  const t = todayStr();
+  if(r.minutesDate === t && (!s.minutesDate || s.minutesDate !== t || (r.minutesToday||0) > (s.minutesToday||0))){
+    s.minutesDate = t; s.minutesToday = Math.max(s.minutesToday||0, r.minutesToday||0);
+  }
+  if(r.dailyDate === t && (r.dailyDone||0) > (s.dailyDone||0) ){ s.dailyDate = t; s.dailyDone = r.dailyDone; }
+}
+
+async function syncPull(){
+  if(!syncKey) return;
+  setSyncDot("sync-busy","⟳","Synchronisiere …");
+  try{
+    const res = await fetch(`${SYNC_API}/tracker/data?key=${encodeURIComponent(syncKey)}`);
+    if(res.status === 200){
+      const blob = await res.json();
+      if(blob && blob.data){
+        mergeRemoteState(blob.data);
+        try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+        updateHeader(); render();
+      }
+      setSyncDot("sync-ok","●","Synchronisiert ✓");
+    } else if(res.status === 404){
+      await syncPushNow();
+    } else {
+      setSyncDot("sync-err","⚠","Sync-Fehler");
+    }
+  }catch(e){ setSyncDot("sync-err","⚠","Offline — lokal gespeichert"); }
+}
+
+async function syncPushNow(){
+  if(!syncKey) return;
+  setSyncDot("sync-busy","⟳","Speichere …");
+  try{
+    const res = await fetch(`${SYNC_API}/tracker/data`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ key: syncKey, data: state }),
+    });
+    setSyncDot(res.ok?"sync-ok":"sync-err", res.ok?"●":"⚠", res.ok?"Synchronisiert ✓":"Sync-Fehler");
+  }catch(e){ setSyncDot("sync-err","⚠","Offline — lokal gespeichert"); }
+}
+
+function scheduleSyncPush(){
+  if(!syncKey) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncPushNow, 2000);
+}
+
+function syncCreateCode(){
+  syncKey = genSyncCode();
+  localStorage.setItem(SYNC_KEY_LS, syncKey);
+  syncPushNow();
+  openSyncSettings();
+}
+
+function syncEnterCode(){
+  const code = prompt("Sync-Code vom anderen Gerät eingeben:");
+  if(!code) return;
+  if(!/^[A-Za-z0-9-]{12,64}$/.test(code.trim())){ alert("Ungültiger Code"); return; }
+  syncKey = code.trim();
+  localStorage.setItem(SYNC_KEY_LS, syncKey);
+  syncPull();
+  openSyncSettings();
+}
+
+function syncCopyCode(){
+  if(!syncKey) return;
+  navigator.clipboard.writeText(syncKey);
+  toast("Sync-Code kopiert 📋","good");
+}
+
+function syncDisconnect(){
+  if(!confirm("Sync auf diesem Gerät trennen? (Daten bleiben lokal und auf dem Server erhalten)")) return;
+  syncKey = "";
+  localStorage.removeItem(SYNC_KEY_LS);
+  setSyncDot("","");
+  openSyncSettings();
+}
+
+function openSyncSettings(){ openSettings(); }
 
 /* helpers */
 function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
@@ -3646,6 +3801,7 @@ function renderHomeTab(){
         <span class="stat-chip streak ${state.streak>0?'alive':''}"><span class="ico">🔥</span><span class="num">${state.streak}</span></span>
         <span class="stat-chip xp"><span class="ico">⭐</span><span class="num">${state.xp}</span></span>
       </div>
+      ${weekStripHTML()}
 
       <div class="min-ring-wrap">
         <div class="ring big" id="minRing" style="--p:${pct}; --sz:176px; --bw:13px">
@@ -3669,6 +3825,30 @@ function renderHomeTab(){
       <div class="hs-slot">⏰ Dein Slot: <b>${state.slotTime||"19:00"}</b> · <a class="more tiny" onclick="editSlot()">ändern</a> · <a class="more tiny" onclick="downloadSlotIcs()">📅 in Kalender</a></div>
       <a class="more tiny hs-more" onclick="setTab('more')">··· mehr Modi &amp; Inhalte ···</a>
     </section>`;
+}
+function weekStripHTML(){
+  // Mo–So der aktuellen Woche: grün = Minutenziel erreicht, gelb = gelernt,
+  // rot = verpasst (wie der Programm-Kalender im Shred Tracker)
+  const dows = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+  const now = new Date(); now.setHours(0,0,0,0);
+  const dowIdx = (now.getDay()+6)%7;
+  const goal = state.dailyMinutesGoal||30;
+  const t = todayStr();
+  const cells = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(now.getTime() - (dowIdx-i)*86400000);
+    const ds = d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+    const mins = (state.minutesLog||{})[ds] || (ds===t ? (state.minutesToday||0) : 0);
+    const xpDay = (state.activity||{})[ds] || 0;
+    let cls = "ws-cell";
+    if(i > dowIdx) cls += " future";
+    else if(mins >= goal) cls += " hit";
+    else if(mins > 0 || xpDay > 0) cls += " part";
+    else cls += " miss";
+    if(i === dowIdx) cls += " today";
+    cells.push(`<div class="${cls}"><span class="dw">${dows[i]}</span><span class="dn">${d.getDate()}</span></div>`);
+  }
+  return `<div class="week-strip">${cells.join("")}</div>`;
 }
 function greeting(){
   const h = new Date().getHours();
@@ -6246,8 +6426,26 @@ function openSettings(){
     <button class="full" style="margin-top:14px" onclick="hideSheet(); setView({type:'methodik'})">📖 Alle Methodik-Quellen ansehen</button>
 
     <div class="divider"></div>
+    <h3 style="margin:14px 0 8px; font-size:14px">☁ Geräte-Sync</h3>
+    ${syncKey ? `
+      <div class="muted tiny">Fortschritt wird unter deinem privaten Code auf dem Server gesichert (gleiches System wie der Shred Tracker). Code auf dem anderen Gerät eingeben → beide bleiben synchron.</div>
+      <div class="sync-code-box">${syncKey}</div>
+      <div class="row" style="gap:8px; flex-wrap:wrap">
+        <button onclick="syncCopyCode()">📋 Code kopieren</button>
+        <button onclick="syncPull()">⟳ Jetzt synchronisieren</button>
+        <button onclick="syncDisconnect()">Trennen</button>
+      </div>
+    ` : `
+      <div class="muted tiny" style="margin-bottom:8px">Ohne Sync liegt dein Fortschritt nur in diesem Browser. Mit einem privaten Sync-Code lernst du nahtlos auf Handy und Laptop weiter — nie mehr Fortschritt verlieren.</div>
+      <div class="row" style="gap:8px; flex-wrap:wrap">
+        <button class="primary" onclick="syncCreateCode()">Neuen Sync-Code erstellen</button>
+        <button onclick="syncEnterCode()">Vorhandenen Code eingeben</button>
+      </div>
+    `}
+
+    <div class="divider"></div>
     <button class="danger full" onclick="confirmReset()">⚠ Allen Fortschritt zurücksetzen</button>
-    <p class="muted tiny center" style="margin-top:10px">Lokal in deinem Browser gespeichert · keine Cloud</p>
+    <p class="muted tiny center" style="margin-top:10px">${syncKey ? 'Lokal + Server-Sync aktiv ☁' : 'Lokal in deinem Browser gespeichert'}</p>
   `;
   showSheet();
 }
@@ -6718,7 +6916,10 @@ function startLearnTimer(){
     _learnSec++;
     if(_learnSec >= 60){
       _learnSec = 0; tickMinutes();
-      state.minutesToday = (state.minutesToday||0) + 1; save();
+      state.minutesToday = (state.minutesToday||0) + 1;
+      if(!state.minutesLog) state.minutesLog = {};
+      state.minutesLog[todayStr()] = Math.max(state.minutesLog[todayStr()]||0, state.minutesToday);
+      save();
       refreshSessTime();
       const goalNow = (state.dailyMinutesGoal||30);
       if(state.minutesToday === goalNow){
@@ -6805,6 +7006,13 @@ tickDaily();
 save();
 render();
 maybeOnboard();
+
+/* Geräte-Sync: beim Start vom Server ziehen; einmaliger Hinweis, falls nicht aktiv */
+if(syncKey){ syncPull(); }
+else if(state.onboardingDone && !localStorage.getItem("srpski-sync-hint")){
+  localStorage.setItem("srpski-sync-hint","1");
+  setTimeout(()=>toastAch("☁","Tipp: Geräte-Sync unter ⚙ aktivieren — nie Fortschritt verlieren"), 2500);
+}
 
 /* Session-Bar (Pomodoro + Methodik-Shortcut) */
 (function mountSessionBar(){
