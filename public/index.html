@@ -2971,7 +2971,9 @@ const defaultState = {
   slotTime:"19:00",      // fixer täglicher Lern-Slot (Selbstverpflichtung)
   chapterMinutes:5,      // Länge eines Lern-Kapitels in Min (5-Min-Häppchen statt 30er-Block)
   skipListening:false,   // Hör-Aufgaben überspringen (z.B. wenn man gerade nicht hören kann)
-  minutesLog:{}          // "y-m-d" -> gelernte Minuten (Wochenleiste + Sync, wie Shred Tracker)
+  minutesLog:{},         // "y-m-d" -> gelernte Minuten (Wochenleiste + Sync, wie Shred Tracker)
+  freezes:1,             // ❄️ Streak-Freezes: retten die Serie bei 1 verpasstem Tag
+  questBonusDate:null    // "y-m-d" -> Tages-Quest-Bonus schon kassiert
 };
 function load(){
   try{
@@ -3017,7 +3019,7 @@ function mergeRemoteState(r){
   // Feldweises Mergen statt Last-write-wins: kein Gerät verliert Fortschritt.
   if(!r || typeof r !== "object") return;
   const s = state;
-  ["xp","streak","unlockedLevel","currentDay","bestSpeed","matchWins","diktatHits"].forEach(k => {
+  ["xp","streak","unlockedLevel","currentDay","bestSpeed","matchWins","diktatHits","freezes"].forEach(k => {
     s[k] = Math.max(s[k]||0, r[k]||0);
   });
   s.activity   = _mergeMaxMap(s.activity, r.activity);
@@ -3143,18 +3145,37 @@ function awardXP(n,label){
   if(state.xp >= 600 && state.unlockedLevel<3) { state.unlockedLevel = 3; toastAch("🥇","Level 3 freigeschaltet"); }
   save();
   updateHeader();
+  maybeQuestBonus();
   if(label) toast(`+${n} XP · ${label}`,"good");
   const newly = checkNewAchievements();
   for(const a of newly){
     setTimeout(()=>{ toastAch(a.icon, a.title); confettiBurst(); }, 700);
   }
 }
+function daysBetweenYmd(a, b){
+  // "y-m-d" (ohne führende Nullen) -> Tagesdifferenz
+  const p = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d).getTime(); };
+  return Math.round((p(b) - p(a)) / 86400000);
+}
 function bumpStreak(){
   const t = todayStr(), y = yesterdayStr();
   if(state.lastSetDate === t) return;            // schon heute gestreakt
-  if(state.lastSetDate === y) state.streak++;
-  else state.streak = 1;
+  if(state.lastSetDate === y){
+    state.streak++;
+  } else if(state.lastSetDate && (state.freezes||0) > 0 && daysBetweenYmd(state.lastSetDate, t) === 2){
+    // 1 Tag verpasst -> Freeze rettet die Serie (wie Duolingo)
+    state.freezes--;
+    state.streak++;
+    setTimeout(()=>{ toastAch("❄️", `Streak-Freeze eingesetzt — Serie gerettet (${state.streak} Tage)!`); }, 400);
+  } else {
+    state.streak = 1;
+  }
   state.lastSetDate = t;
+  // Alle 7 Streak-Tage einen Freeze verdienen (max. 3 auf Lager)
+  if(state.streak > 0 && state.streak % 7 === 0 && (state.freezes||0) < 3){
+    state.freezes = (state.freezes||0) + 1;
+    setTimeout(()=>{ toastAch("❄️", "Streak-Freeze verdient! (+1 Schutztag)"); }, 900);
+  }
   save();
 }
 function markLesson(id,mode,value){
@@ -3798,8 +3819,9 @@ function renderHomeTab(){
       <div class="hs-greet">${greet}, Kaito 👋</div>
       ${serbCharCardHTML()}
       <div class="hs-chips">
-        <span class="stat-chip streak ${state.streak>0?'alive':''}"><span class="ico">🔥</span><span class="num">${state.streak}</span></span>
-        <span class="stat-chip xp"><span class="ico">⭐</span><span class="num">${state.xp}</span></span>
+        <span class="stat-chip streak ${state.streak>0?'alive':''}" title="Tagesstreak"><span class="ico">🔥</span><span class="num">${state.streak}</span></span>
+        <span class="stat-chip" title="Streak-Freezes: retten die Serie bei 1 verpasstem Tag"><span class="ico">❄️</span><span class="num">${state.freezes||0}</span></span>
+        <span class="stat-chip xp" title="XP"><span class="ico">⭐</span><span class="num">${state.xp}</span></span>
       </div>
       ${weekStripHTML()}
 
@@ -3814,7 +3836,10 @@ function renderHomeTab(){
 
       <div class="hs-status ${done?'done':''}">
         ${done ? "✅ Tagesziel geschafft — bravo!" : `Heute noch <b>${rem} Min</b> bis dein Slot erfüllt ist`}
+        · <a class="more tiny" onclick="editGoal()">Ziel ändern</a>
       </div>
+
+      ${questCardHTML()}
 
       <button class="start-btn" onclick="startSession()">
         <span class="sb-ico">▶</span>
@@ -3826,6 +3851,65 @@ function renderHomeTab(){
       <a class="more tiny hs-more" onclick="setTab('more')">··· mehr Modi &amp; Inhalte ···</a>
     </section>`;
 }
+/* --- Tages-Quests: 3 kleine Ziele, alle geschafft = Bonus-XP --- */
+function questState(){
+  const goalM = state.dailyMinutesGoal||30;
+  const mins = state.minutesToday||0;
+  const xpToday = state.dailyDate === todayStr() ? (state.dailyDone||0) : 0;
+  const set = getSet(state.currentDay);
+  const q = [
+    { ico:"⏱", label:`${goalM} Min lernen`, prog:Math.min(mins,goalM), max:goalM, done:mins>=goalM },
+    { ico:"⭐", label:"60 XP sammeln", prog:Math.min(xpToday,60), max:60, done:xpToday>=60 },
+  ];
+  if(set){
+    q.push({ ico:"✅", label:`Tages-Set ${state.currentDay} abschliessen`, prog:setDoneCount(state.currentDay), max:3, done:setIsComplete(state.currentDay) });
+  } else {
+    const due = srsDueCount();
+    q.push({ ico:"🧠", label:"Smart Review leeren", prog:due===0?1:0, max:1, done:due===0 });
+  }
+  return q;
+}
+function maybeQuestBonus(){
+  const t = todayStr();
+  if(state.questBonusDate === t) return;
+  if(!questState().every(q=>q.done)) return;
+  state.questBonusDate = t;   // vor awardXP setzen (Rekursionsschutz)
+  awardXP(25, "Alle Tages-Quests 🎉");
+  confettiBurst(); sfx("win");
+}
+function questCardHTML(){
+  const qs = questState();
+  const allDone = qs.every(q=>q.done);
+  return `
+    <section class="card ${allDone?'elev':''}" style="margin-top:12px; padding:14px; text-align:left">
+      <div class="row between center" style="margin-bottom:8px">
+        <b style="font-size:13.5px">🎯 Tages-Quests</b>
+        <span class="muted tiny">${qs.filter(q=>q.done).length}/${qs.length}${allDone?' · +25 XP kassiert ✓':' · alle 3 = +25 XP'}</span>
+      </div>
+      ${qs.map(q=>`
+        <div class="row center" style="gap:8px; margin:6px 0">
+          <span style="font-size:14px; width:20px; text-align:center">${q.done?"✅":q.ico}</span>
+          <div style="flex:1">
+            <div style="font-size:12.5px; ${q.done?'opacity:.55; text-decoration:line-through':''}">${q.label}</div>
+            <div style="height:5px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:3px">
+              <div style="height:100%; width:${Math.round(q.prog/q.max*100)}%; background:${q.done?'var(--good, #5dd39e)':'var(--accent)'}; border-radius:3px"></div>
+            </div>
+          </div>
+          <span class="muted tiny" style="width:44px; text-align:right">${q.prog}/${q.max}</span>
+        </div>`).join("")}
+    </section>`;
+}
+function editGoal(){
+  const c = document.getElementById("sheetContent");
+  c.innerHTML = `
+    <h2>⏱ Tagesziel</h2>
+    <p class="muted tiny" style="margin-bottom:12px">Klein anfangen schlägt gross scheitern — Hauptsache jeden Tag. Du kannst jederzeit erhöhen.</p>
+    <div class="row" style="gap:8px; flex-wrap:wrap">
+      ${[5,10,15,20,30,45].map(g=>`<button class="${(state.dailyMinutesGoal||30)===g?'primary':''}" onclick="state.dailyMinutesGoal=${g}; save(); hideSheet(); render(); toast('Tagesziel: ${g} Min ✓','good')">${g} Min</button>`).join("")}
+    </div>`;
+  showSheet();
+}
+
 function weekStripHTML(){
   // Mo–So der aktuellen Woche: grün = Minutenziel erreicht, gelb = gelernt,
   // rot = verpasst (wie der Programm-Kalender im Shred Tracker)
@@ -6920,6 +7004,7 @@ function startLearnTimer(){
       if(!state.minutesLog) state.minutesLog = {};
       state.minutesLog[todayStr()] = Math.max(state.minutesLog[todayStr()]||0, state.minutesToday);
       save();
+      maybeQuestBonus();
       refreshSessTime();
       const goalNow = (state.dailyMinutesGoal||30);
       if(state.minutesToday === goalNow){
@@ -6986,7 +7071,7 @@ function renderMoreTab(){
             <div class="sub">${t.sub}</div>
           </button>`).join("")}
       </div>
-      <p class="foot-credit">Srpski Studio · Mit Liebe für gute Pivo-Pausen 🍺</p>
+      <p class="foot-credit">Srpski Studio v3 — Sync · Quests · Freezes · Mit Liebe für gute Pivo-Pausen 🍺</p>
     </section>`;
 }
 
@@ -6999,6 +7084,18 @@ document.getElementById("sheetBg").addEventListener("click", hideSheet);
 if("speechSynthesis" in window){
   speechSynthesis.onvoiceschanged = () => { _voicesCache = speechSynthesis.getVoices(); };
   speechSynthesis.getVoices();
+}
+
+/* Service Worker: ersetzt alte SW-Versionen (April-App) und lädt bei
+   Übernahme einmalig neu, damit nie eine veraltete Version hängen bleibt. */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").then(reg => { reg.update(); }).catch(()=>{});
+  let _swReloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(_swReloaded) return;
+    _swReloaded = true;
+    location.reload();
+  });
 }
 
 applyTheme();
